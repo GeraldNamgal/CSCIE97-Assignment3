@@ -7,23 +7,24 @@
 
 package com.cscie97.store.model;
 
+import com.cscie97.store.controller.Observer;
+import com.cscie97.store.controller.UpdateEvent;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 import java.time.format.DateTimeFormatter;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.time.LocalDateTime; 
 
 /* *
  * The Store Model Service API implementation class that contains methods and attributes for creating,
- * maintaining, and updating stores and their assets
+ * maintaining, and updating stores and their assets. The Store Model Service interface also extends the
+ * Subject interface (the subject in the observer pattern)
  */
 public class Modeler implements StoreModelService
 {
-    /* Listener Variable(s) */
+    /* Observer Variable(s) */
     
-    private ArrayList<PropertyChangeListener> listener; 
+    private ArrayList<Observer> observers; 
     
     /* API Variables */
 	
@@ -44,25 +45,115 @@ public class Modeler implements StoreModelService
         inventories = new LinkedHashMap<String, Inventory>();
         activeBaskets = new LinkedHashMap<String, Basket>();
         devices = new LinkedHashMap<String, Sensor>();
-        listener = new ArrayList<PropertyChangeListener>();
+        observers = new ArrayList<Observer>();
     }
     
-    /* Private Method(s) */
+    /* Subject interface API Methods */
     
-    private void notifyListeners(Object object, String property, String oldValue, String newValue)
+    @Override
+    public void registerObserver(Observer newObserver)
     {
-        for (PropertyChangeListener listenerName : listener)
+        observers.add(newObserver);
+    }
+  
+    @Override
+    public void deregisterObserver(Observer observerToRemove)
+    {
+        observers.remove(observerToRemove);        
+    }
+    
+    @Override
+    public void notifyObservers(Sensor device, String event)
+    {
+        for (Observer observer : observers)
         {
-            listenerName.propertyChange(new PropertyChangeEvent(this, property, oldValue, newValue));
+            observer.update(new UpdateEvent(device, event));
         }
     }  
     
-    /* API Methods */ 
+    /* Store Model Service interface API Methods */
     
-    public void addChangeListener(PropertyChangeListener newListener)
+    /* *
+     * Sends an event to a device
+     * @param id The unique id of the device
+     * @param event The event to be sent
+     * @return An event string
+     */
+    @Override
+    public void createEvent(String id, String simulatedEvent, String auth_token)
     {
-        listener.add(newListener);
+        Sensor device = devices.get(id);
+        
+        // If device wasn't found
+        if (device == null)
+        {
+            try
+            {
+                throw new ModelerException("create event", "device not found");
+            }
+            
+            catch (ModelerException exception)
+            {
+                System.out.println();
+                System.out.print(exception.getMessage());      
+                return;
+            }
+        }
+        
+        // TODO: Send event to device's event method       
+        String event = device.event(simulatedEvent);
+        
+        // TODO: Notify observers of the event
+        notifyObservers(device, event);   
     }
+    
+    /* *
+     * Sends a command to an appliance
+     * @param id The unique id of the appliance
+     * @param command The command to be sent
+     */
+    @Override
+    public void createCommand(String id, String command, String auth_token)
+    {
+        Sensor device = devices.get(id);
+        
+        // If device wasn't found
+        if (device == null)
+        {
+            try
+            {
+                throw new ModelerException("create command", "device not found");
+            }
+            
+            catch (ModelerException exception)
+            {
+                System.out.println();
+                System.out.print(exception.getMessage());      
+                return;
+            }
+        }
+        
+        // Check that device is an appliance
+        if (!Appliance.containsTypeEnum(device.getType()))
+        {
+            try
+            {
+                throw new ModelerException("create command", "device is not an appliance; command not sent");
+            }
+            
+            catch (ModelerException exception)
+            {
+                System.out.println();
+                System.out.print(exception.getMessage());      
+                return;
+            }
+        }
+        
+        // Cast device to an Appliance
+        Appliance appliance = (Appliance) device;
+                
+        // TODO: Send command to appliance's method                
+    }  
     
     /* *
      * Creates a new Store
@@ -71,6 +162,7 @@ public class Modeler implements StoreModelService
      * @param address The postal address of the store
      * @return A Store object
      */
+    @Override
     public Store defineStore(String id, String name, String address, String auth_token)
     {
         // Check that store id is unique
@@ -102,6 +194,7 @@ public class Modeler implements StoreModelService
      * Prints a store's information to stdout
      * @param storeId The unique id of the store
      */
+    @Override
     public void showStore(String storeId, String auth_token)
     {
         // Get store
@@ -262,6 +355,7 @@ public class Modeler implements StoreModelService
      * @param location The location within the store the aisle should be (floor | storeroom)
      * @return An Aisle object
      */
+    @Override
     public Aisle defineAisle(String storeAisleLoc, String name, String description, String location, String auth_token)
     {
         // Split storeAisleLoc on colon
@@ -333,6 +427,7 @@ public class Modeler implements StoreModelService
      * Print an aisle's information to stdout
      * @param storeAisleLoc
      */
+    @Override
     public void showAisle(String storeAisleLoc, String auth_token)
     {        
         // Split storeAisleLoc on colon
@@ -417,6 +512,7 @@ public class Modeler implements StoreModelService
      * @param level The height of the shelf (high | medium | low)
      * @return A Shelf object
      */
+    @Override
     public Shelf defineShelf(String storeAisleShelfLoc, String name, String level, String description, String temperature, String auth_token)
     { 
         // Split storeAisleShelfLoc on colon
@@ -526,6 +622,7 @@ public class Modeler implements StoreModelService
      * @param level The height of the shelf (high | medium | low)
      * @return A Shelf object
      */
+    @Override
     public Shelf defineShelf(String storeAisleShelfLoc, String name, String level, String description, String auth_token)
     {
         // Split storeAisleShelfLoc on colon
@@ -617,6 +714,7 @@ public class Modeler implements StoreModelService
      * Prints a shelf's information to stdout
      * @param storeAisleShelfLoc The unique id of the shelf
      */
+    @Override
     public void showShelf(String storeAisleShelfLoc, String auth_token)
     {      
         // Split storeAisleShelfLoc on colon
@@ -732,6 +830,7 @@ public class Modeler implements StoreModelService
      * @param count The number of a product item on the shelf
      * @return An Inventory object
      */
+    @Override
     public Inventory defineInventory(String id, String storeAisleShelfLoc, Integer capacity, Integer count, String productId, String auth_token)
     {        
         // Check that count is within valid range
@@ -894,6 +993,7 @@ public class Modeler implements StoreModelService
      * Prints an inventory to stdout
      * @param id The inventory's unique id
      */
+    @Override
     public void showInventory(String id, String auth_token)
     {         
         // Retrieve inventory
@@ -929,6 +1029,7 @@ public class Modeler implements StoreModelService
      * @param id The unique id of the inventory
      * @param amount The amount to increment or decrement by, a positive or negative value, respectively 
      */
+    @Override
     public void updateInventory(String id, Integer amount, String auth_token)
     {       
         Inventory inventory = inventories.get(id);
@@ -972,6 +1073,7 @@ public class Modeler implements StoreModelService
      * Defines a store product with temperature input give
      * @return A Product object 
      */
+    @Override
     public Product defineProduct(String productId, String name, String description, String size, String category, Integer unitPrice
             , String temperature, String auth_token)
     {
@@ -1023,6 +1125,7 @@ public class Modeler implements StoreModelService
      * Defines a store product with a default temperature
      * @return A Product object
      */
+    @Override
     public Product defineProduct(String productId, String name, String description, String size, String category, Integer unitPrice
             , String auth_token)
     {
@@ -1058,6 +1161,7 @@ public class Modeler implements StoreModelService
      * Prints a product's information to stdout
      * @param id The product's unique id
      */
+    @Override
     public void showProduct(String id, String auth_token)
     {
         // Get product
@@ -1094,6 +1198,7 @@ public class Modeler implements StoreModelService
      * @param account The blockchain address of the customer used for billing
      * @return A Customer object
      */
+    @Override
     public Customer defineCustomer(String id, String firstName, String lastName, String ageGroup, String type, String emailAddress
             , String account, String auth_token)
     {
@@ -1164,6 +1269,7 @@ public class Modeler implements StoreModelService
      * Prints a customer's information to stdout
      * @param id The customer's unique id
      */
+    @Override
     public void showCustomer(String id, String auth_token)
     {
         Customer customer = customers.get(id);
@@ -1201,6 +1307,7 @@ public class Modeler implements StoreModelService
      * @param storeAisleLoc The location to update the customer at
      * Referenced https://compiler.javatpoint.com/opr/test.jsp?filename=CurrentDateTimeExample1
      */
+    @Override
     public void updateCustomer(String id, String storeAisleLoc, String auth_token)
     {
         // Check that customer exists
@@ -1278,7 +1385,7 @@ public class Modeler implements StoreModelService
             // Split location to get store
             String storeId = currentLoc.split(":")[0];
             
-            // TODO: Remove customer from store's list of active customers
+            // Remove customer from store's list of active customers
             stores.get(storeId).getCustomers().remove(id);
         }
             
@@ -1299,6 +1406,7 @@ public class Modeler implements StoreModelService
      * @param customerId The unique id of the customer
      * @return A Basket object
      */
+    @Override
     public Basket getCustomerBasket(String customerId, String auth_token)
     {
         Customer customer = customers.get(customerId);
@@ -1372,6 +1480,7 @@ public class Modeler implements StoreModelService
      * @param customerId The basket's unique id (same as customer's id)
      * @param itemCount The amount of the product to add
      */
+    @Override
     public void addBasketItem(String customerId, String productId, Integer itemCount, String auth_token)
     {
         // Check that itemCount is greater than 0
@@ -1493,6 +1602,7 @@ public class Modeler implements StoreModelService
      * @param customerId The basket's unique id (same as customer's id)
      * @param itemCount The amount of the product to remove
      */
+    @Override
     public void removeBasketItem(String customerId, String productId, Integer itemCount, String auth_token)
     {
         // Check that itemCount is greater than 0
@@ -1596,6 +1706,7 @@ public class Modeler implements StoreModelService
      * Clears a customer's basket and removes its association to them
      * @param customerId The basket's unique id (same as customer's id)
      */
+    @Override
     public void clearBasket(String customerId, String auth_token)
     {
         // Check if basket exists
@@ -1622,6 +1733,7 @@ public class Modeler implements StoreModelService
      * Print a customer's basket items to stdout
      * @param customerId The basket's unique id (same as customer's id)
      */
+    @Override
     public void showBasketItems(String customerId, String auth_token)
     {
         Basket basket = activeBaskets.get(customerId);
@@ -1677,6 +1789,7 @@ public class Modeler implements StoreModelService
      * @param storeAisleLoc The aisle location of the sensor
      * @return A Sensor object (Appliance class extends Sensor)
      */
+    @Override
     public Sensor defineDevice(String id, String name, String type, String storeAisleLoc, String auth_token)
     {
         // Check that id is unique
@@ -1783,6 +1896,7 @@ public class Modeler implements StoreModelService
      * Prints a device's information to stdout
      * @param id The device's unique id
      */
+    @Override
     public void showDevice(String id, String auth_token)
     {
         Sensor device = devices.get(id);
@@ -1810,90 +1924,5 @@ public class Modeler implements StoreModelService
         // Print string to stdout
         System.out.print("\nOutput:>>");
         System.out.print(deviceString);
-    }
-    
-    /* *
-     * Sends an event to a device
-     * @ id The unique id of the device
-     * @ event The event to be sent
-     */
-    public void createEvent(String id, String event, String auth_token)
-    {
-        Sensor device = devices.get(id);
-        
-        // If device wasn't found
-        if (device == null)
-        {
-            try
-            {
-                throw new ModelerException("create event", "device not found");
-            }
-            
-            catch (ModelerException exception)
-            {
-                System.out.println();
-                System.out.print(exception.getMessage());      
-                return;
-            }
-        }
-        
-        // Add event to device's list of events
-        device.getEvents().add(event);
-        
-        // Send event to device's method
-        System.out.print("\nOutput:>>");
-        device.event(event);
-    }
-    
-    /* *
-     * Sends a command to an appliance
-     * @param id The unique id of the appliance
-     * @param command The command to be sent
-     */
-    public void createCommand(String id, String command, String auth_token)
-    {
-        Sensor device = devices.get(id);
-        
-        // If device wasn't found
-        if (device == null)
-        {
-            try
-            {
-                throw new ModelerException("create command", "device not found");
-            }
-            
-            catch (ModelerException exception)
-            {
-                System.out.println();
-                System.out.print(exception.getMessage());      
-                return;
-            }
-        }
-        
-        // Check that device is an appliance
-        if (!Appliance.containsTypeEnum(device.getType()))
-        {
-            try
-            {
-                throw new ModelerException("create command", "device is not an appliance; command not sent");
-            }
-            
-            catch (ModelerException exception)
-            {
-                System.out.println();
-                System.out.print(exception.getMessage());      
-                return;
-            }
-        }
-        
-        // Cast device to an Appliance
-        Appliance appliance = (Appliance) device;
-        
-        // Add command to appliance's list of commands
-        appliance.getCommands().add(command);
-        
-        // Send command to appliance's method
-        System.out.print("\nOutput:>>");
-        appliance.command(command);        
-    }
+    }     
 }

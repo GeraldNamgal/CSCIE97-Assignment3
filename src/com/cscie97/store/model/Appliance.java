@@ -7,8 +7,6 @@
 
 package com.cscie97.store.model;
 
-import java.util.ArrayList;
-
 /* *
  * Appliance class that represents an appliance in a store. Extends Sensor class
  */
@@ -22,11 +20,7 @@ public class Appliance extends Sensor
     enum Type 
     { 
         speaker, robot, turnstile; 
-    }
-    
-    /* My Variables */
-    
-    ArrayList<String> commands;
+    }   
         
     /* Constructor */
     
@@ -37,19 +31,17 @@ public class Appliance extends Sensor
      */
     public Appliance(String id, String name, String type, String location)
     {
-        super(id, name, type, location);   
-        
-        commands = new ArrayList<String>();
+        super(id, name, type, location);         
     }
     
     /* API Methods */
     
     /* *
-     * Sends appliance commands. Outputs to stdout the received command
+     * TODO: Receives appliance commands
      */
     public void command(String command)
     {
-        System.out.println("\nCommand \"" + command + "\" was received by device " + this.getId() + "!");
+        
     }
     
     /* Utility Methods */
@@ -68,12 +60,5 @@ public class Appliance extends Sensor
         }
 
         return false;
-    }
-    
-    /* Getters and Setters */
-
-    public ArrayList<String> getCommands()
-    {
-        return commands;
     }       
 }

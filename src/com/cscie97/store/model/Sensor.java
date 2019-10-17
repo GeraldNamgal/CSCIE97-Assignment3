@@ -7,8 +7,6 @@
 
 package com.cscie97.store.model;
 
-import java.util.ArrayList;
-
 /* *
  * Sensor class that represents a sensor that's in a store
  */
@@ -27,11 +25,7 @@ public class Sensor
     private String id;
     private String name;
     private String type;
-    private String location;
-    
-    /* My Variables */
-    
-    ArrayList<String> events;
+    private String location; 
     
     /* Constructor */
     
@@ -45,18 +39,19 @@ public class Sensor
         this.id = id;
         this.name = name;
         this.type = type;
-        this.location = location;
-        events = new ArrayList<String>();
+        this.location = location;        
     }
     
     /* API Methods */
     
     /* *
-     * Sends a sensor an event. Outputs to stdout the received event
+     * TODO: Receives events and notifies observers
      */
-    public void event(String event)
+    public String event(String perceivedEvent)
     {
-        System.out.println("\nEvent \"" + event + "\" was received by device " + this.id + "!");
+        String event = perceivedEvent;
+        
+        return event;
     }
     
     /* Utility Methods */
@@ -97,10 +92,5 @@ public class Sensor
     public String getLocation()
     {
         return location;
-    }
-    
-    public ArrayList<String> getEvents()
-    {
-        return events;
-    } 
+    }     
 }

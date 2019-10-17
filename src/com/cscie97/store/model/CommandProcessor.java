@@ -7,13 +7,13 @@
 
 package com.cscie97.store.model;
 
-import java.beans.PropertyChangeListener;
+import com.cscie97.store.controller.Controller;
+import com.cscie97.store.controller.Observer;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import com.cscie97.store.controller.*;
 
 /* *
  * Exercises the Modeler
@@ -23,7 +23,7 @@ public class CommandProcessor
     /* Variables */
 
     private StoreModelService modeler;
-    private PropertyChangeListener controller;
+    private Observer controller;
     private int lineNum = 0;
     
     /* API Methods */

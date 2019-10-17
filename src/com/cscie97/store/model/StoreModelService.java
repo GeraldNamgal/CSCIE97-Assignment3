@@ -1,12 +1,12 @@
 package com.cscie97.store.model;
 
-import java.beans.PropertyChangeListener;
+import com.cscie97.store.controller.Subject;
 
 /* *
  * The Store Model Service API interface that defines the methods for creating, maintaining, and updating stores
  * and their assets
  */
-public interface StoreModelService
+public interface StoreModelService extends Subject
 {
     Store defineStore(String id, String name, String address, String auth_token);
     void showStore(String storeId, String auth_token);
@@ -35,6 +35,5 @@ public interface StoreModelService
     public Sensor defineDevice(String id, String name, String type, String storeAisleLoc, String auth_token);
     void showDevice(String id, String auth_token);
     void createEvent(String id, String event, String auth_token);
-    void createCommand(String id, String command, String auth_token);
-    void addChangeListener(PropertyChangeListener newListener);
+    void createCommand(String id, String command, String auth_token);    
 }

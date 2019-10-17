@@ -1,19 +1,28 @@
 package com.cscie97.store.controller;
 
-import com.cscie97.store.model.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import com.cscie97.store.model.StoreModelService;
 
-public class Controller implements PropertyChangeListener
+/* *
+ * Controller implements the Observer interface (i.e., the observer in the observer pattern).
+ */
+public class Controller implements Observer
 {
+    /* Constructor */
+    
     public Controller(StoreModelService modeler)
     {
-        modeler.addChangeListener(this);
+        // Register Controller with Model Service
+        modeler.registerObserver(this);
     }
 
+    /* API Method(s) */
+    
     @Override
-    public void propertyChange(PropertyChangeEvent event)
+    public void update(UpdateEvent event)
     {
+        // TODO
+        
+        // TODO: Debugging -- Print event to stdout
         
     }
 }

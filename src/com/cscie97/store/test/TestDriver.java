@@ -7,8 +7,8 @@
 
 package com.cscie97.store.test;
 
+import com.cscie97.store.model.CommandProcessor;
 import java.util.Scanner;
-import com.cscie97.store.model.*;
 
 /* *
  * Test driver class that contains main method that calls the CommandProcessor class to exercise the Modeler
@@ -49,7 +49,7 @@ public class TestDriver
             input.close();            
         }
         
-        // If script file argument included on command line call processCommandFile
+        // If script file argument included on command line, call processCommandFile
         else if (args.length == 1)
         {
             // Call command processor with file name
