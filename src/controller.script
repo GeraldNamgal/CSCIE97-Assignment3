@@ -1,0 +1,46 @@
+# Define store 1
+define store store1_id name "Harvard Square Store" address "1400 Mass Avenue, Cambridge, MA 02138"
+
+# Define aisle 1
+define aisle store1_id:aisle1_id name Dairy description "milk, yogurt, and other dairy products" location storeroom
+
+# Define aisle 2
+define aisle store1_id:aisle2_id name "Breads" description bakery location floor
+
+# Define aisle 3
+define aisle store1_id:aisle3_id name Juices description "canned and room temperature" location floor
+
+# Define shelf 1 (in aisle 2)
+define shelf store1_id:aisle2_id:shelf1_id name Dairy level high description "soy and almond milks" temperature refrigerated
+
+# Define product 1
+define product prod1_id name "soya drink" description "soy milk brand" size "2 L" category "milk" unit_price 345 temperature refrigerated
+
+# Define inventory 1 (on shelf 1 in aisle 2)
+define inventory inv1_id location store1_id:aisle2_id:shelf1_id capacity 30 count 30 product prod1_id
+
+# Define product 2
+define product prod2_id name "almond drank" description "almond milk brand" size "2 L" category "milk" unit_price 350 temperature refrigerated
+
+# Define inventory 2 (on shelf 1 in aisle 2)
+define inventory inv2_id location store1_id:aisle2_id:shelf1_id capacity 40 count 40 product prod2_id
+
+# Define product 3
+define product prod3_id name "Cheesy-O's" description "cheese" size "1 oz" category "dairy" unit_price 275
+
+# Define shelf 2 (in aisle 2)
+define shelf store1_id:aisle2_id:shelf2_id name "Cereals" level high description "cereal and oatmeal"
+
+# Define customer 1 (a registered customer)
+define customer customer1_id first_name John last_name Smith age_group adult type registered email_address john@jmail.com account john
+
+# TODO: Create ledger account for customer customer1_id
+
+# Define customer2_id (a guest)
+define customer customer2_id first_name Stephanie last_name Jones age_group child type guest email_address steph.j@jmail.com account steph
+
+# Define device sensor1_id
+define device sensor1_id name "ceiling cam" type camera location store1_id:aisle1_id
+
+# Create event event1_id for sensor 1
+create event sensor1_id event "This is an event.d"
