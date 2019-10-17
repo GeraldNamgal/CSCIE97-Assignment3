@@ -49,9 +49,9 @@ public class Sensor
      */
     public String event(String perceivedEvent)
     {
-        String event = perceivedEvent;
+        String eventToSend = perceivedEvent;
         
-        return event;
+        return eventToSend;
     }
     
     /* Utility Methods */

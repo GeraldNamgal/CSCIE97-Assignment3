@@ -63,11 +63,11 @@ public class Modeler implements StoreModelService
     }
     
     @Override
-    public void notifyObservers(Sensor device, String event)
+    public void notifyObservers(Sensor sourceDevice, String eventToSend)
     {
         for (Observer observer : observers)
         {
-            observer.update(new UpdateEvent(device, event));
+            observer.update(new UpdateEvent(sourceDevice, eventToSend));
         }
     }  
     
@@ -82,10 +82,10 @@ public class Modeler implements StoreModelService
     @Override
     public void createEvent(String id, String simulatedEvent, String auth_token)
     {
-        Sensor device = devices.get(id);
+        Sensor sourceDevice = devices.get(id);
         
         // If device wasn't found
-        if (device == null)
+        if (sourceDevice == null)
         {
             try
             {
@@ -101,10 +101,10 @@ public class Modeler implements StoreModelService
         }
         
         // TODO: Send event to device's event method       
-        String event = device.event(simulatedEvent);
+        String eventToSend = sourceDevice.event(simulatedEvent);
         
         // TODO: Notify observers of the event
-        notifyObservers(device, event);   
+        notifyObservers(sourceDevice, eventToSend);   
     }
     
     /* *
