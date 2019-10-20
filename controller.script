@@ -1,46 +1,73 @@
 # Define store 1
-define store store1_id name "Harvard Square Store" address "1400 Mass Avenue, Cambridge, MA 02138"
+define store store1 name "Harvard Square Store" address "1400 Mass Avenue, Cambridge, MA 02138"
 
 # Define aisle 1
-define aisle store1_id:aisle1_id name Dairy description "milk, yogurt, and other dairy products" location storeroom
+define aisle store1:aisle1 name Dairy description "milk, yogurt, and other dairy products" location storeroom
 
 # Define aisle 2
-define aisle store1_id:aisle2_id name "Breads" description bakery location floor
+define aisle store1:aisle2 name "Breads" description bakery location floor
 
 # Define aisle 3
-define aisle store1_id:aisle3_id name Juices description "canned and room temperature" location floor
+define aisle store1:aisle3 name Juices description "canned and room temperature" location floor
 
 # Define shelf 1 (in aisle 2)
-define shelf store1_id:aisle2_id:shelf1_id name Dairy level high description "soy and almond milks" temperature refrigerated
+define shelf store1:aisle2:shelf1 name Dairy level high description "soy and almond milks" temperature refrigerated
 
 # Define product 1
-define product prod1_id name "soya drink" description "soy milk brand" size "2 L" category "milk" unit_price 345 temperature refrigerated
+define product product1 name "soya drink" description "soy milk brand" size "2 L" category "milk" unit_price 345 temperature refrigerated
 
 # Define inventory 1 (on shelf 1 in aisle 2)
-define inventory inv1_id location store1_id:aisle2_id:shelf1_id capacity 30 count 30 product prod1_id
+define inventory inventory1 location store1:aisle2:shelf1 capacity 30 count 30 product product1
 
 # Define product 2
-define product prod2_id name "almond drank" description "almond milk brand" size "2 L" category "milk" unit_price 350 temperature refrigerated
+define product product2 name "almond drank" description "almond milk brand" size "2 L" category "milk" unit_price 350 temperature refrigerated
 
 # Define inventory 2 (on shelf 1 in aisle 2)
-define inventory inv2_id location store1_id:aisle2_id:shelf1_id capacity 40 count 40 product prod2_id
+define inventory inventory2 location store1:aisle2:shelf1 capacity 40 count 40 product product2
 
 # Define product 3
-define product prod3_id name "Cheesy-O's" description "cheese" size "1 oz" category "dairy" unit_price 275
+define product product3 name "Cheesy-O's" description "cheese" size "1 oz" category "dairy" unit_price 275
 
 # Define shelf 2 (in aisle 2)
-define shelf store1_id:aisle2_id:shelf2_id name "Cereals" level high description "cereal and oatmeal"
+define shelf store1:aisle2:shelf2 name "Cereals" level high description "cereal and oatmeal"
 
-# Define customer 1 (a registered customer)
-define customer customer1_id first_name John last_name Smith age_group adult type registered email_address john@jmail.com account john
+# Define customer 1 (registered customer)
+define customer customer1 first_name John last_name Smith age_group adult type registered email_address john@jmail.com account john
 
-# TODO: Create ledger account for customer customer1_id
+# TODO: Create ledger account for customer 1
 
-# Define customer2_id (a guest)
-define customer customer2_id first_name Stephanie last_name Jones age_group child type guest email_address steph.j@jmail.com account steph
+# Define customer 2 (a guest)
+define customer customer2 first_name Stephanie last_name Jones age_group child type guest email_address steph.j@jmail.com account steph
 
-# Define device sensor1_id
-define device sensor1_id name "ceiling cam" type camera location store1_id:aisle1_id
+# Define camera 1
+define device camera1 name "camera 1" type camera location store1:aisle1
 
-# Create event event1_id for sensor 1
-create event sensor1_id event "  b This is an event.    n "
+# Define turnstile 1
+define device turnstile1 name "turnstile 1" type turnstile location store1:null
+
+# Define turnstile 2
+define device turnstile2 name "turnstile 2" type turnstile location store1:null
+
+# Define turnstile 3
+define device turnstile3 name "turnstile 3" type turnstile location store1:null
+
+# Define speaker 1
+define device speaker1 name "speaker 1" type speaker location store1:aisle1
+
+# Define speaker 2
+define device speaker2 name "speaker 2" type speaker location store1:aisle2
+
+# Define speaker 3
+define device speaker3 name "speaker 3" type speaker location store1:aisle3
+
+# Define robot 1
+define device robot1 name "robot 1" type robot location store1:null
+
+# Define robot 2
+define device robot2 name "robot 2" type robot location store1:null
+
+# Define robot 3
+define device robot3 name "robot 3" type robot location store1:null
+
+# Create emergency event
+create event camera1 event "emergency fire aisle1"

@@ -6,16 +6,18 @@ public abstract class Command
 {
     /* Variables */
     
-    private Sensor sourceDevice;
+    protected Sensor sourceDevice;
+    protected String[] eventStrArr;
     
     /* Constructor */
     
-    public Command(Sensor sourceDevice)
+    public Command(Sensor sourceDevice, String[] eventStrArr)
     {
         this.sourceDevice = sourceDevice;
+        this.eventStrArr = eventStrArr;        
     }
     
     /* Methods */
     
-    public abstract void execute();
+    public abstract void execute();      
 }

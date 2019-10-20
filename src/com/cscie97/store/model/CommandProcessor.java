@@ -2,17 +2,20 @@
  * Gerald Arocena
  * CSCI E-97
  * Professor: Eric Gieseke
- * Assignment 2
+ * Assignment 3
  */
 
 package com.cscie97.store.model;
 
 import com.cscie97.store.controller.Controller;
 import com.cscie97.store.controller.Observer;
+import com.cscie97.store.controller.Subject;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+
 import java.util.ArrayList;
 
 /* *
@@ -40,7 +43,7 @@ public class CommandProcessor
         
         // Create Controller if it doesn't exist
         if (controller == null)
-            controller = new Controller(modeler);
+            controller = new Controller((Subject) modeler);
     	
         parseAndProcess(command);
     }
@@ -60,7 +63,7 @@ public class CommandProcessor
         
         // Create Controller if it doesn't exist
         if (controller == null)
-            controller = new Controller(modeler);
+            controller = new Controller((Subject) modeler);
     	
         // Check if the file is empty
         try
@@ -123,8 +126,7 @@ public class CommandProcessor
         // Check if input is a comment
         if (trimmedInput.charAt(0) == '#')
         {                         
-            System.out.println(trimmedInput + " [line " + lineNum + " in file]"); 
-          
+            System.out.println(trimmedInput + " [line " + lineNum + " in file]");          
             return;
         }
 

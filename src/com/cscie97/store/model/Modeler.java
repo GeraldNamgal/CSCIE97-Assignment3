@@ -2,16 +2,19 @@
  * Gerald Arocena
  * CSCI E-97
  * Professor: Eric Gieseke
- * Assignment 2 
+ * Assignment 3 
  */
 
 package com.cscie97.store.model;
 
 import com.cscie97.store.controller.Observer;
+import com.cscie97.store.controller.Subject;
 import com.cscie97.store.controller.UpdateEvent;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
+
 import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime; 
 
@@ -20,7 +23,7 @@ import java.time.LocalDateTime;
  * maintaining, and updating stores and their assets. The Store Model Service interface also extends the
  * Subject interface (the subject in the observer pattern)
  */
-public class Modeler implements StoreModelService
+public class Modeler implements StoreModelService, Subject
 {
     /* Observer Variable(s) */
     
@@ -150,9 +153,9 @@ public class Modeler implements StoreModelService
         }
         
         // Cast device to an Appliance
-        Appliance appliance = (Appliance) device;
+        // TODO: Necessary or delete? -- Appliance appliance = (Appliance) device;
                 
-        // TODO: Send command to appliance's method                
+        // TODO: Necessary or delete? -- Send command to appliance's method                
     }  
     
     /* *
@@ -1357,7 +1360,7 @@ public class Modeler implements StoreModelService
             }
             
             // Check that aisle exists
-            if (!stores.get(storeId).getAisles().containsKey(aisleNumber))
+            if (!stores.get(storeId).getAisles().containsKey(aisleNumber) && !aisleNumber.equals("null"))
             {
                 try
                 {
@@ -1827,7 +1830,7 @@ public class Modeler implements StoreModelService
             }
         }
             
-        if (!stores.get(storeId).getAisles().containsKey(aisleNumber))
+        if (!stores.get(storeId).getAisles().containsKey(aisleNumber) && !aisleNumber.equals("null"))
         {
             try
             {
@@ -1924,5 +1927,62 @@ public class Modeler implements StoreModelService
         // Print string to stdout
         System.out.print("\nOutput:>>");
         System.out.print(deviceString);
-    }     
+    }
+    
+    @Override
+    public Store getStore(String storeId, String auth_token)
+    {
+        // Get store
+        Store store = stores.get(storeId);
+        
+        // Check that store exists
+        if (store == null)
+        {
+            try
+            {
+                throw new ModelerException("show store", "store not found");
+            }
+            
+            catch (ModelerException exception)
+            {
+                System.out.println();
+                System.out.print(exception.getMessage());      
+                return null;
+            }
+        }
+        
+        return store;
+    }
+
+    /* Getters and Setters */
+    
+    public LinkedHashMap<String, Store> getStores()
+    {
+        return stores;
+    }    
+
+    public LinkedHashMap<String, Product> getProducts()
+    {
+        return products;
+    }    
+
+    public LinkedHashMap<String, Customer> getCustomers()
+    {
+        return customers;
+    }    
+
+    public LinkedHashMap<String, Inventory> getInventories()
+    {
+        return inventories;
+    }    
+
+    public LinkedHashMap<String, Basket> getActiveBaskets()
+    {
+        return activeBaskets;
+    }    
+
+    public LinkedHashMap<String, Sensor> getDevices()
+    {
+        return devices;
+    }          
 }

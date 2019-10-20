@@ -2,7 +2,7 @@
  * Gerald Arocena
  * CSCI E-97
  * Professor: Eric Gieseke
- * Assignment 2
+ * Assignment 3
  */
 
 package com.cscie97.store.test;

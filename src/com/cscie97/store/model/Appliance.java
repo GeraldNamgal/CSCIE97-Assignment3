@@ -2,7 +2,7 @@
  * Gerald Arocena
  * CSCI E-97
  * Professor: Eric Gieseke
- * Assignment 2
+ * Assignment 3
  */
 
 package com.cscie97.store.model;
@@ -12,7 +12,7 @@ package com.cscie97.store.model;
  */
 public class Appliance extends Sensor
 {
-    /* API Variables */  
+    /* Variables */  
 
     /* *
      * Types of valid appliances
@@ -20,7 +20,11 @@ public class Appliance extends Sensor
     enum Type 
     { 
         speaker, robot, turnstile; 
-    }   
+    }
+    
+    private Turnstile turnstile;
+    private Speaker speaker;
+    private Robot robot;
         
     /* Constructor */
     
@@ -31,17 +35,80 @@ public class Appliance extends Sensor
      */
     public Appliance(String id, String name, String type, String location)
     {
-        super(id, name, type, location);         
+        super(id, name, type, location);
+        
+        if (type.equals("turnstile"))
+        {
+            turnstile = new Turnstile();
+        }
+        
+        if (type.equals("robot"))
+        {
+            robot = new Robot();
+        }
+        
+        if (type.equals("speaker"))
+        {
+            speaker = new Speaker();
+        }
     }
     
     /* API Methods */
     
     /* *
-     * TODO: Receives appliance commands
+     * Receives appliance commands
      */
     public void command(String command)
     {
+        // TODO: Necessary or delete? Maybe if have time
+    }
+    
+    /* Nested Classes */   
+    
+    public class Turnstile
+    {       
+        private boolean open = false;
         
+        public boolean isOpen()
+        {
+            return open;
+        }
+
+        public void setOpen(boolean trueOrFalse)
+        {
+            open = trueOrFalse;
+            System.out.println(getName() + ": open == " + isOpen());
+        }       
+    }
+    
+    public class Speaker
+    {
+        // TODO
+        
+        public void announce(String expression)
+        {
+            System.out.println(getName() + ": " + expression);
+        }
+    }
+    
+    public class Robot
+    {
+        // TODO
+        
+        public void addressEmergency(String emergency, String aisleName)
+        {
+            System.out.println(getName() + ": Addressing " + emergency + " in " + aisleName + " aisle");
+        }
+        
+        public void assstLeavingCstmrs(String storeName)
+        {
+            System.out.println(getName() + ": Assisting customers leaving " + storeName);
+        }
+        
+        public void clean()
+        {
+            // TODO
+        }
     }
     
     /* Utility Methods */
@@ -60,5 +127,22 @@ public class Appliance extends Sensor
         }
 
         return false;
-    }       
+    }
+
+    /* Getters and Setters */
+    
+    public Turnstile getTurnstile()
+    {
+        return turnstile;
+    }    
+
+    public Speaker getSpeaker()
+    {
+        return speaker;
+    }    
+
+    public Robot getRobot()
+    {
+        return robot;
+    }           
 }

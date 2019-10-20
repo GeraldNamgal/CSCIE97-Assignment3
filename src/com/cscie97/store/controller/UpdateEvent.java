@@ -5,8 +5,8 @@ import com.cscie97.store.model.Sensor;
 // Referenced https://www.vogella.com/tutorials/DesignPatternObserver/article.html
 public class UpdateEvent
 {
-    Sensor sourceDevice;
-    String perceivedEvent;
+    private Sensor sourceDevice;
+    private String perceivedEvent;
     
     public UpdateEvent(Sensor sourceDevice, String eventToSend)
     {

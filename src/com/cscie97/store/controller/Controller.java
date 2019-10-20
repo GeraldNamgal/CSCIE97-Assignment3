@@ -1,5 +1,10 @@
 package com.cscie97.store.controller;
 
+import java.util.ArrayList;
+import java.util.Map.Entry;
+
+import com.cscie97.store.model.Appliance;
+import com.cscie97.store.model.Sensor;
 import com.cscie97.store.model.StoreModelService;
 
 /* *
@@ -7,52 +12,63 @@ import com.cscie97.store.model.StoreModelService;
  */
 public class Controller implements Observer
 {
+    /* Variables */
+    
+    private StoreModelService modeler;
+    // TODO: Log rule executions and resulting actions
+    private String logger;
+    
     /* Constructor */
     
-    public Controller(StoreModelService modeler)
-    {
+    public Controller(Subject modeler)
+    {       
         // Register Controller with Model Service
         modeler.registerObserver(this);
+        
+        this.modeler = (StoreModelService) modeler;
     }
 
     /* API Method(s) */
     
     @Override
-    public void update(UpdateEvent perceivedEvent)
+    public void update(UpdateEvent event)
     {
-        // TODO
+        // TODO: In progress
         
         // Delimit event string on whitespace and add each value to an array
-        String[] splitEventArr = perceivedEvent.getPerceivedEvent().split("\\s+");
+        String[] eventStrArr = event.getPerceivedEvent().split("\\s+");
         
-        if ((splitEventArr.length == 3) && splitEventArr[0].equals("emergency"))
+        if ((eventStrArr.length == 3) && eventStrArr[0].equals("emergency"))
         {           
-            // TODO
+            // TODO: In progress
             
-            // Check that aisle is valid
+            // TODO: Validate location? (Unnecessary? Or do in Model Service?)            
             
             // Check for emergency types
-            if (splitEventArr[1].equals("fire") || splitEventArr[1].equals("flood") || splitEventArr[1].equals("earthquake")
-                    || splitEventArr[1].equals("armed_intruder"))
+            if (eventStrArr[1].equals("fire") || eventStrArr[1].equals("flood") || eventStrArr[1].equals("earthquake")
+                    || eventStrArr[1].equals("armed_intruder"))
             {
-                // Create new Emergency (extends Command)
-                Emergency emergency = new Emergency(perceivedEvent.getSourceDevice());
+                // TODO: Create new Emergency               
+                Command emergency = new Emergency(event.getSourceDevice(), eventStrArr);
+                
+                // Run the Command's execute method
+                emergency.execute();
             }
             
             else
             {
-                System.out.println("\nEvent is inactionable.");                
+                System.out.println("\nEvent is not recognized.");                
                 return;
             }
         }
         
-        else if ((splitEventArr.length == 6) && splitEventArr[0].equals("basket_items") && (splitEventArr[2].equals("adds") || splitEventArr[2].equals("removes")))
+        else if ((eventStrArr.length == 6) && eventStrArr[0].equals("basket_items") && (eventStrArr[2].equals("adds") || eventStrArr[2].equals("removes")))
         {
             // Check if integer input is valid
             Boolean validInts = true;
             try
             {
-                Integer.parseInt(splitEventArr[4]);                
+                Integer.parseInt(eventStrArr[4]);                
             }
 
             catch (NumberFormatException exception)
@@ -62,60 +78,140 @@ public class Controller implements Observer
             
             if (validInts == false)
             {
-                System.out.println("\nEvent is inactionable.");
+                System.out.println("\nEvent is not recognized.");
                 return;
             }
         }
         
-        else if ((splitEventArr.length == 3) && splitEventArr[0].equals("clean"))
+        else if ((eventStrArr.length == 3) && eventStrArr[0].equals("clean"))
         {
             
         }
         
-        else if ((splitEventArr.length == 2) && splitEventArr[0].equals("broken_glass"))
+        else if ((eventStrArr.length == 2) && eventStrArr[0].equals("broken_glass"))
         {
             
         }
         
-        else if ((splitEventArr.length == 2) && splitEventArr[0].equals("missing_person"))
+        else if ((eventStrArr.length == 2) && eventStrArr[0].equals("missing_person"))
         {
             
         }
         
-        else if ((splitEventArr.length == 2) && splitEventArr[0].equals("customer_seen"))
+        else if ((eventStrArr.length == 2) && eventStrArr[0].equals("customer_seen"))
         {
             
         }
         
-        else if ((splitEventArr.length == 4) && splitEventArr[0].equals("fetch_product"))
+        else if ((eventStrArr.length == 4) && eventStrArr[0].equals("fetch_product"))
         {
             
         }
         
-        else if ((splitEventArr.length == 2) && splitEventArr[0].equals("account_balance"))
+        else if ((eventStrArr.length == 2) && eventStrArr[0].equals("account_balance"))
         {
             
         }
         
-        else if ((splitEventArr.length == 2) && splitEventArr[0].equals("car_assist"))
+        else if ((eventStrArr.length == 2) && eventStrArr[0].equals("car_assist"))
         {
             
         }
         
-        else if ((splitEventArr.length == 2) && splitEventArr[0].equals("checkout"))
+        else if ((eventStrArr.length == 2) && eventStrArr[0].equals("checkout"))
         {
             
         }
         
-        else if ((splitEventArr.length == 2) && splitEventArr[0].equals("enter_store"))
+        else if ((eventStrArr.length == 2) && eventStrArr[0].equals("enter_store"))
         {
             
         }
         
         else
         {
-            System.out.println("\nEvent is inactionable.");
+            System.out.println("\nEvent is not recognized.");
             return;
+        }
+    }
+    
+    /* Nested Classes */
+    
+    public class Emergency extends Command
+    {       
+        /* Constructor */
+        
+        public Emergency(Sensor sourceDevice, String[] eventStrArr)
+        {
+            super(sourceDevice, eventStrArr);
+        }
+
+        /* Method(s) */
+        
+        @Override
+        public void execute()
+        {
+            // TODO
+            
+            System.out.println();
+            
+            // Initialize array for getting store's device map's robot appliance keys
+            ArrayList<String> robotKeys = new ArrayList<String>();
+            
+            // Iterate through devices
+            Sensor devicePointer;
+            for (Entry<String, Sensor> deviceEntry : modeler.getStore(sourceDevice.getLocation().split(":")[0], null).getDevices().entrySet())
+            {
+                devicePointer = deviceEntry.getValue();
+                
+                // Check if device is an appliance              
+                if (Appliance.containsTypeEnum(devicePointer.getType()))
+                {
+                    Appliance appliance = (Appliance) devicePointer;
+                
+                    // If device is a turnstile
+                    if (appliance.getType().equals("turnstile"))
+                    {                    
+                        // Open turnstile
+                        appliance.getTurnstile().setOpen(true);                        
+                    }
+                    
+                    // If device is a speaker
+                    if (appliance.getType().equals("speaker"))
+                    {
+                        // Announce emergency
+                        appliance.getSpeaker().announce("\"There is a " + eventStrArr[1] + " in "
+                                + modeler.getStore(appliance.getLocation().split(":")[0], null).getAisles().get(eventStrArr[2]).getName()
+                                + " aisle. Please leave store immediately!\"");
+                    }
+                    
+                    // If device is a robot
+                    if (appliance.getType().equals("robot"))
+                    {
+                        // Add hash map's robot key to array
+                        robotKeys.add(deviceEntry.getKey());                       
+                    }
+                }
+            }
+            
+            // If store has a robot
+            if (robotKeys.size() > 0)
+            {
+                Appliance appliance = (Appliance) modeler.getStore(sourceDevice.getLocation().split(":")[0], null).getDevices().get(robotKeys.get(0));                
+                appliance.getRobot().addressEmergency(eventStrArr[1]
+                        , modeler.getStore(appliance.getLocation().split(":")[0], null).getAisles().get(eventStrArr[2]).getName());
+            }
+            
+            // If store has more than one robot
+            if (robotKeys.size() > 1)
+            {
+                Appliance appliance; 
+                for (int i = 1; i < robotKeys.size(); i++)
+                {
+                    appliance = (Appliance) modeler.getStore(sourceDevice.getLocation().split(":")[0], null).getDevices().get(robotKeys.get(i));
+                    appliance.getRobot().assstLeavingCstmrs(modeler.getStore(appliance.getLocation().split(":")[0], null).getName());
+                }
+            }
         }
     }
 }

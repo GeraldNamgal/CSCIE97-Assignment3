@@ -1,12 +1,10 @@
 package com.cscie97.store.model;
 
-import com.cscie97.store.controller.Subject;
-
 /* *
  * The Store Model Service API interface that defines the methods for creating, maintaining, and updating stores
  * and their assets
  */
-public interface StoreModelService extends Subject
+public interface StoreModelService
 {
     Store defineStore(String id, String name, String address, String auth_token);
     void showStore(String storeId, String auth_token);
@@ -35,5 +33,8 @@ public interface StoreModelService extends Subject
     public Sensor defineDevice(String id, String name, String type, String storeAisleLoc, String auth_token);
     void showDevice(String id, String auth_token);
     void createEvent(String id, String event, String auth_token);
-    void createCommand(String id, String command, String auth_token);    
+    void createCommand(String id, String command, String auth_token);
+    
+    // Assignment 3 method additions
+    Store getStore(String storeId, String auth_token);
 }
