@@ -5,6 +5,7 @@ import java.util.Map.Entry;
 
 import com.cscie97.store.model.Appliance;
 import com.cscie97.store.model.Sensor;
+import com.cscie97.store.model.Store;
 import com.cscie97.store.model.StoreModelService;
 
 /* *
@@ -153,14 +154,17 @@ public class Controller implements Observer
         {
             // TODO
             
-            System.out.println();
+            // Get the source store
+            Store store = modeler.getStore(sourceDevice.getLocation().split(":")[0], null);
             
-            // Initialize array for getting store's device map's robot appliance keys
+            // Initialize array for getting store's device map's robot type appliance keys
             ArrayList<String> robotKeys = new ArrayList<String>();
             
-            // Iterate through devices
+            System.out.println();
+            
+            // Iterate through devices and perform type-specific actions
             Sensor devicePointer;
-            for (Entry<String, Sensor> deviceEntry : modeler.getStore(sourceDevice.getLocation().split(":")[0], null).getDevices().entrySet())
+            for (Entry<String, Sensor> deviceEntry : store.getDevices().entrySet())
             {
                 devicePointer = deviceEntry.getValue();
                 
@@ -180,8 +184,7 @@ public class Controller implements Observer
                     if (appliance.getType().equals("speaker"))
                     {
                         // Announce emergency
-                        appliance.getSpeaker().announce("\"There is a " + eventStrArr[1] + " in "
-                                + modeler.getStore(appliance.getLocation().split(":")[0], null).getAisles().get(eventStrArr[2]).getName()
+                        appliance.getSpeaker().announce("\"There is a " + eventStrArr[1] + " in " + store.getAisles().get(eventStrArr[2]).getName()
                                 + " aisle. Please leave store immediately!\"");
                     }
                     
@@ -197,9 +200,8 @@ public class Controller implements Observer
             // If store has a robot
             if (robotKeys.size() > 0)
             {
-                Appliance appliance = (Appliance) modeler.getStore(sourceDevice.getLocation().split(":")[0], null).getDevices().get(robotKeys.get(0));                
-                appliance.getRobot().addressEmergency(eventStrArr[1]
-                        , modeler.getStore(appliance.getLocation().split(":")[0], null).getAisles().get(eventStrArr[2]).getName());
+                Appliance appliance = (Appliance) store.getDevices().get(robotKeys.get(0));                
+                appliance.getRobot().addressEmergency(eventStrArr[1], store.getAisles().get(eventStrArr[2]).getName());
             }
             
             // If store has more than one robot
@@ -208,8 +210,8 @@ public class Controller implements Observer
                 Appliance appliance; 
                 for (int i = 1; i < robotKeys.size(); i++)
                 {
-                    appliance = (Appliance) modeler.getStore(sourceDevice.getLocation().split(":")[0], null).getDevices().get(robotKeys.get(i));
-                    appliance.getRobot().assstLeavingCstmrs(modeler.getStore(appliance.getLocation().split(":")[0], null).getName());
+                    appliance = (Appliance) store.getDevices().get(robotKeys.get(i));
+                    appliance.getRobot().assstLeavingCstmrs(store.getName());
                 }
             }
         }

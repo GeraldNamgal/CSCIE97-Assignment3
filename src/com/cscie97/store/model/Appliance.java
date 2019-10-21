@@ -105,6 +105,13 @@ public class Appliance extends Sensor
             System.out.println(getName() + ": Assisting customers leaving " + storeName);
         }
         
+        public boolean restock(String location, Product product)
+        {
+            // TODO
+            
+            return true;
+        }
+        
         public void clean()
         {
             // TODO

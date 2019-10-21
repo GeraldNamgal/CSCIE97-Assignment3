@@ -106,7 +106,7 @@ public class Modeler implements StoreModelService, Subject
         // TODO: Send event to device's event method       
         String eventToSend = sourceDevice.event(simulatedEvent);
         
-        // TODO: Notify observers of the event
+        // TODO: Notify observers of the event sent back from device
         notifyObservers(sourceDevice, eventToSend);   
     }
     
