@@ -74,20 +74,19 @@ public class Appliance extends Sensor
             return open;
         }
 
-        public void setOpen(boolean trueOrFalse)
+        public boolean setOpen(boolean trueOrFalse)
         {
             open = trueOrFalse;
-            System.out.println(getName() + ": open == " + isOpen());
+            return open;
         }       
     }
     
     public class Speaker
     {
-        // TODO
-        
-        public void announce(String expression)
+        public boolean announce(String expression)
         {
-            System.out.println(getName() + ": " + expression);
+            boolean announcing = true;            
+            return announcing;
         }
     }
     
@@ -95,26 +94,30 @@ public class Appliance extends Sensor
     {
         // TODO
         
-        public void addressEmergency(String emergency, String aisleName)
+        public boolean addressEmergency(String emergency, String aisle)
         {
-            System.out.println(getName() + ": Addressing " + emergency + " in " + aisleName + " aisle");
+            boolean addressingEmergency = true;
+            return addressingEmergency;
         }
         
-        public void assstLeavingCstmrs(String storeName)
+        public boolean assstLeavingCstmrs(String store)
         {
-            System.out.println(getName() + ": Assisting customers leaving " + storeName);
+            boolean assstingLeavingCstmrs = true;
+            return assstingLeavingCstmrs;
         }
         
-        public boolean restock(String location, Product product)
+        public boolean restock(String product, String fromLocation, String toLocation)
+        {
+            boolean restocking = true;            
+            return restocking;
+        }
+        
+        public boolean clean(String product, String aisle)
         {
             // TODO
             
-            return true;
-        }
-        
-        public void clean()
-        {
-            // TODO
+            boolean cleaning = true;
+            return cleaning;
         }
     }
     

@@ -28,10 +28,10 @@ public class Inventory
      * @param capacity The maximum number of product allowed on shelf
      * @param count The number of the product on the shelf currently
      */
-    public Inventory(String id, String location, Integer capacity, Integer count, String productId)
+    public Inventory(String id, String storeAisleShelfLoc, Integer capacity, Integer count, String productId)
     {
         inventoryId = id;
-        this.location = location;
+        location = storeAisleShelfLoc;
         this.capacity = capacity;
         this.count = count;
         this.productId = productId;

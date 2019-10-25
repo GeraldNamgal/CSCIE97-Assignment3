@@ -1700,7 +1700,10 @@ public class Modeler implements StoreModelService, Subject
             else
             {
                 currentItemCount = currentItemCount - itemCount;
-                basketItems.put(productId, currentItemCount);
+                if (currentItemCount == 0)
+                    basketItems.remove(productId);
+                else
+                    basketItems.put(productId, currentItemCount);
             }
         }          
     }
@@ -1927,35 +1930,11 @@ public class Modeler implements StoreModelService, Subject
         // Print string to stdout
         System.out.print("\nOutput:>>");
         System.out.print(deviceString);
-    }
-    
-    @Override
-    public Store getStore(String storeId, String auth_token)
-    {
-        // Get store
-        Store store = stores.get(storeId);
-        
-        // Check that store exists
-        if (store == null)
-        {
-            try
-            {
-                throw new ModelerException("show store", "store not found");
-            }
-            
-            catch (ModelerException exception)
-            {
-                System.out.println();
-                System.out.print(exception.getMessage());      
-                return null;
-            }
-        }
-        
-        return store;
-    }
+    }   
 
     /* Getters and Setters */
     
+    @Override
     public LinkedHashMap<String, Store> getStores()
     {
         return stores;
@@ -1984,5 +1963,5 @@ public class Modeler implements StoreModelService, Subject
     public LinkedHashMap<String, Sensor> getDevices()
     {
         return devices;
-    }          
+    }             
 }

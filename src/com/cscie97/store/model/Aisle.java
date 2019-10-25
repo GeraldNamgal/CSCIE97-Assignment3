@@ -16,7 +16,7 @@ public class Aisle
 {       
     /* API Variables */
     
-    enum Location 
+    public enum Location 
     { 
         floor, storeroom; 
     }

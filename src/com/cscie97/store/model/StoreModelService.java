@@ -1,5 +1,7 @@
 package com.cscie97.store.model;
 
+import java.util.LinkedHashMap;
+
 /* *
  * The Store Model Service API interface that defines the methods for creating, maintaining, and updating stores
  * and their assets
@@ -35,6 +37,7 @@ public interface StoreModelService
     void createEvent(String id, String event, String auth_token);
     void createCommand(String id, String command, String auth_token);
     
-    // Assignment 3 method additions
-    Store getStore(String storeId, String auth_token);
+    // Getters and Setters
+    LinkedHashMap<String, Store> getStores();
+    LinkedHashMap<String, Product> getProducts();
 }

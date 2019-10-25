@@ -9,7 +9,7 @@ package com.cscie97.store.test;
 
 import java.util.Scanner;
 
-import com.cscie97.store.controller.CommandProcessor;
+import com.cscie97.store.model.CommandProcessor;
 
 /* *
  * Test driver class that contains main method that calls the CommandProcessor class to exercise the Modeler
