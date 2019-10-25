@@ -53,7 +53,7 @@ public class Controller implements Observer
             if (eventStrArr[1].equals("fire") || eventStrArr[1].equals("flood") || eventStrArr[1].equals("earthquake")
                     || eventStrArr[1].equals("armed_intruder"))
             {
-                // TODO: Create new Emergency               
+                // Create new Emergency               
                 Command emergency = new Emergency(event.getSourceDevice(), eventStrArr);
                 
                 // Run the Command's execute method
@@ -62,6 +62,8 @@ public class Controller implements Observer
             
             else
             {
+                // TODO (???): Add an Exception
+                
                 System.out.println("\nEvent is not recognized.");                
                 return;
             }
@@ -84,6 +86,8 @@ public class Controller implements Observer
             
             if (validInts == false)
             {
+                // TODO (???): Add an Exception
+                
                 System.out.println("\nEvent is not recognized.");
                 return;
             }*/
@@ -140,6 +144,8 @@ public class Controller implements Observer
         
         else
         {
+            // TODO (???): Add an Exception
+            
             System.out.println("\nEvent is not recognized.");
             return;
         }
@@ -267,9 +273,34 @@ public class Controller implements Observer
             // Get customer's (virtual) basket
             modeler.getCustomerBasket(eventStrArr[1], null);
             
+            // Initialize array for getting store's robot Appliance map keys (for restocking)
+            ArrayList<String> robotKeys = new ArrayList<String>();           
+            
+            // Iterate through all devices to find the robots (if any)
+            Sensor devicePointer;
+            
+            for (Entry<String, Sensor> deviceEntry : store.getDevices().entrySet())
+            {
+                devicePointer = deviceEntry.getValue();
+                
+                // If device is an appliance              
+                if (Appliance.containsTypeEnum(devicePointer.getType()))
+                {
+                    // Cast device to an appliance
+                    Appliance appliance = (Appliance) devicePointer;             
+                    
+                    // If device is a robot
+                    if (appliance.getType().equals("robot"))
+                    {
+                        // Add robot device's map key to array
+                        robotKeys.add(deviceEntry.getKey());                       
+                    }
+                }
+            }
+            
             System.out.println();
             
-            // If customer added (rather than removed) a basket item
+            // If event was customer added (rather than removed) a basket item
             if (eventStrArr[2].equals("add") && !inventory.equals(null))
             {                            
                 // Update customer's virtual basket items by adding item to it
@@ -280,33 +311,8 @@ public class Controller implements Observer
                 // Update inventory by decrementing product count on the shelf
                 modeler.updateInventory(inventory.getInventoryId(), (Integer.parseInt(eventStrArr[4]) * (-1)), null);
                 System.out.println("Controller Service: Updating inventory " + inventory.getInventoryId() + "'s count by " + Integer.parseInt(eventStrArr[4]) * (-1));                
-                
-                // Initialize array for getting store's robot Appliance map keys (for restocking)
-                ArrayList<String> robotKeys = new ArrayList<String>();           
-                
-                // Iterate through all devices to find the robots (if any)
-                Sensor devicePointer;
-                
-                for (Entry<String, Sensor> deviceEntry : store.getDevices().entrySet())
-                {
-                    devicePointer = deviceEntry.getValue();
-                    
-                    // If device is an appliance              
-                    if (Appliance.containsTypeEnum(devicePointer.getType()))
-                    {
-                        // Cast device to an appliance
-                        Appliance appliance = (Appliance) devicePointer;             
-                        
-                        // If device is a robot
-                        if (appliance.getType().equals("robot"))
-                        {
-                            // Add robot device's map key to array
-                            robotKeys.add(deviceEntry.getKey());                       
-                        }
-                    }
-                }
-                
-                // If store has robots then command one to restock if possible
+                               
+                // If store has robots then command one to restock what customer removed
                 if (robotKeys.size() > 0)
                 {                
                     // Put all the storeroom aisle numbers in a hashset (for locating product in storeroom)
@@ -337,8 +343,6 @@ public class Controller implements Observer
                         // If product was found in storeroom
                         if (storeroomInvIds.size() > 0)
                         {
-                            // TODO
-                            
                             // Have a robot restock; Update floor and storeroom inventories
                             Appliance appliance = (Appliance) store.getDevices().get(robotKeys.get(0));    
                             
@@ -349,23 +353,30 @@ public class Controller implements Observer
                                 System.out.println(appliance.getName() + ": Restocking " + eventStrArr[3] + " from "
                                         + (inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[1] + ":"
                                                 + inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[2]) + " (storeroom) "
-                                        + "to " + eventStrArr[5] + " (floor)");                    
+                                        + "to " + eventStrArr[5]);                    
                                 
-                                // TODO: Make sure that if less than update amount then get all of the supply -- Update storeroom location's inventory
-                                modeler.updateInventory(inventories.get(storeroomInvIds.get(0)).getInventoryId(), (Integer.parseInt(eventStrArr[4]) * (-1)), null);
+                                // If storeroom product supply is less than update amount then get all of the supply for restock
+                                Integer updateAmount = Integer.parseInt(eventStrArr[4]);
+                                if (inventories.get(storeroomInvIds.get(0)).getCount() < updateAmount)
+                                    updateAmount = inventories.get(storeroomInvIds.get(0)).getCount();
+                                
+                                // Update storeroom location's inventory
+                                modeler.updateInventory(inventories.get(storeroomInvIds.get(0)).getInventoryId(), (updateAmount * (-1)), null);
                                 System.out.println("Controller Service: Updating inventory " + inventories.get(storeroomInvIds.get(0)).getInventoryId()
-                                        + "'s count by " + Integer.parseInt(eventStrArr[4]) * (-1));                
+                                        + "'s (storeroom) count by " + (updateAmount * (-1)));                
     
-                                // TODO: Make sure update amount matches with above (after do less than update amount stuff) -- Update floor location's inventory
-                                modeler.updateInventory(inventory.getInventoryId(), Integer.parseInt(eventStrArr[4]), null);
-                                System.out.println("Controller Service: Updating inventory " + inventory.getInventoryId() + "'s count by " + Integer.parseInt(eventStrArr[4]));                
+                                // Update floor location's inventory
+                                modeler.updateInventory(inventory.getInventoryId(), updateAmount, null);
+                                System.out.println("Controller Service: Updating inventory " + inventory.getInventoryId() + "'s count by " + updateAmount);                
                             }
                         }
                         
                         // Else there's no product to restock with
                         else
                         {
-                            // TODO
+                            // TODO (???): Add an Exception
+                            
+                            return;
                         }
                         
                     }
@@ -373,23 +384,99 @@ public class Controller implements Observer
                     // Else there are no storeroom aisles; can't restock
                     else
                     {
-                        // TODO
+                        // TODO (???): Add an Exception
+                        
+                        return;
                     }
                 }
                 
                 // TODO (Exception?): Else there are no robots found that can restock
                 else
                 {
+                    // TODO (???): Add an Exception
                     
+                    return;
                 }
             }
             
-            // Else If customer removed (rather than added) a basket item
+            // Else if event was customer removed (rather than added) a basket item
             else if (eventStrArr[2].equals("remove") && !inventory.equals(null))
             {
                 // Update basket items by removing item from it
                 modeler.removeBasketItem(eventStrArr[1], eventStrArr[3], Integer.parseInt(eventStrArr[4]), null);
                 System.out.println("Controller Service: Removing " + Integer.parseInt(eventStrArr[4]) + " of " + eventStrArr[3] + " from customer " + eventStrArr[1] + "'s virtual basket");
+            
+                // If there's room on the shelf to put back items, add them back to shelf
+                if ((inventory.getCapacity() - inventory.getCount()) >= Integer.parseInt(eventStrArr[4]))
+                    modeler.updateInventory(inventory.getInventoryId(), Integer.parseInt(eventStrArr[4]), null);
+                
+                // Else if there's no room on the floor shelf, put back on storeroom shelf
+                else
+                {
+                    // Put all the storeroom aisle numbers in a hashset (for locating product storage in storeroom)
+                    HashSet<String> storeroomAisles = new HashSet<String>();
+                    
+                    for (Entry<String, Aisle> aisleEntry : store.getAisles().entrySet())
+                    {
+                        if (aisleEntry.getValue().getLocation().toString().equals("storeroom"))
+                            storeroomAisles.add(aisleEntry.getValue().getNumber());
+                    }
+                    
+                    // If there were any storeroom aisles
+                    if (storeroomAisles.size() > 0)
+                    {
+                        // Collect storeroom-only inventories that have the given productId and have shelf room
+                        ArrayList<String> storeroomInvIds = new ArrayList<String>();
+                     
+                        for (Entry<String, Inventory> inventoryEntry : inventories.entrySet())
+                        {
+                            if (inventoryEntry.getValue().getProductId().equals(eventStrArr[3])
+                                    && storeroomAisles.contains(inventoryEntry.getValue().getLocation().split(":")[1])
+                                    && ((inventoryEntry.getValue().getCapacity() - inventoryEntry.getValue().getCount()) >= Integer.parseInt(eventStrArr[4])))
+                            {                        
+                                storeroomInvIds.add(inventoryEntry.getValue().getInventoryId());
+                            }
+                        }                       
+                                               
+                        // If product storage was found in storeroom
+                        if (storeroomInvIds.size() > 0)
+                        {
+                            // Have a robot restock; Update floor and storeroom inventories
+                            Appliance appliance = (Appliance) store.getDevices().get(robotKeys.get(0));    
+                            
+                            // Call robot appliance's restock method (returns a boolean)
+                            if (appliance.getRobot().restock(eventStrArr[3], (inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[1]
+                                    + inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[2]), eventStrArr[5]))
+                            {
+                                System.out.println(appliance.getName() + ": No room on " + eventStrArr[5] + "; restocking "
+                                        + eventStrArr[3] + " to " + (inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[1] + ":"
+                                                + inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[2]) + " (storeroom)");
+                                
+                                // Update storeroom location's inventory
+                                modeler.updateInventory(inventories.get(storeroomInvIds.get(0)).getInventoryId(), Integer.parseInt(eventStrArr[4]), null);
+                                System.out.println("Controller Service: Updating inventory " + inventories.get(storeroomInvIds.get(0)).getInventoryId()
+                                        + "'s (storeroom) count by " + Integer.parseInt(eventStrArr[4]));                                        
+                            }
+                        }
+                        
+                        // Else there's no storage to put items back on
+                        else
+                        {
+                            // TODO (???): Add an Exception
+                            
+                            return;
+                        }
+                        
+                    }
+                        
+                    // Else there are no storeroom aisles; can't restock
+                    else
+                    {
+                        // TODO (???): Add an Exception
+                        
+                        return;
+                    }
+                }                
             }                
         }
     }
@@ -412,10 +499,12 @@ public class Controller implements Observer
             LinkedHashMap<String, Store> stores = modeler.getStores();
             Store store = stores.get(sourceDevice.getLocation().split(":")[0]);                
             
-            // Initialize array for getting store's device map's robot type appliance keys
+            // TODO: Update inventory for lost product
+            
+            // Initialize array for getting store's robot appliance map keys
             ArrayList<String> robotKeys = new ArrayList<String>();           
             
-            // Iterate through devices and find robots
+            // Iterate through devices to find robots
             Sensor devicePointer;
             for (Entry<String, Sensor> deviceEntry : store.getDevices().entrySet())
             {
@@ -429,7 +518,7 @@ public class Controller implements Observer
                     // If device is a robot
                     if (appliance.getType().equals("robot"))
                     {
-                        // Add hash map's robot key to array
+                        // Add robot key to array
                         robotKeys.add(deviceEntry.getKey());                       
                     }
                 }
@@ -446,7 +535,13 @@ public class Controller implements Observer
                     System.out.println(appliance.getName() + ": Cleaning " + modeler.getProducts().get(eventStrArr[1]).getName()+ " in "
                             + store.getAisles().get(eventStrArr[2]).getName() + " aisle");
                 }
-            }     
+            }
+            
+            // Else if store doesn't have a robot
+            else
+            {
+                // TODO (???): Throw an Exception
+            }
         }
     }
 }

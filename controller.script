@@ -124,19 +124,19 @@ update customer customer1 location store1:aisle1
 # Create basket event (customer 1 adds 6 of product 1 to their basket)
 create event camera1 event "basket_items customer1 add product1 6 aisle1:shelf1"
 
-# Show store 1 (count for product 1's inventory in aisle 5 [storeroom] should be 24)
+# Show store 1 (count for product 1's inventory [inventory2] in aisle 5 [storeroom] should be 24)
 show store store1
 
-# Show customer 1's basket items
+# Show customer 1's basket items (should have 6 of product1)
 show basket_items customer1
 
 # Create basket event (customer 1 removes 6 of product 1 from their basket)
 create event camera1 event "basket_items customer1 remove product1 6 aisle1:shelf1"
 
-# Show store 1
+# Show store 1 (count for product 1's inventory [inventory2] in aisle 5 [storeroom] should be back to 30)
 show store store1
 
-# Show customer 1's basket items
+# Show customer 1's basket items (should be empty)
 show basket_items customer1
 
 # Clean event
