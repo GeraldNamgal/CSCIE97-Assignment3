@@ -6,9 +6,9 @@ import com.cscie97.store.model.Sensor;
 public class UpdateEvent
 {
     private Sensor sourceDevice;
-    private String perceivedEvent;
+    private String[] perceivedEvent;
     
-    public UpdateEvent(Sensor sourceDevice, String eventToSend)
+    public UpdateEvent(Sensor sourceDevice, String[] eventToSend)
     {
         this.sourceDevice = sourceDevice;
         this.perceivedEvent = eventToSend;
@@ -21,7 +21,7 @@ public class UpdateEvent
         return sourceDevice;
     }   
 
-    public String getPerceivedEvent()
+    public String[] getPerceivedEvent()
     {
         return perceivedEvent;
     }     

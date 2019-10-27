@@ -83,7 +83,22 @@ define device camera2 name "camera 2" type camera location store1:aisle2
 define device camera3 name "camera 3" type camera location store1:aisle3
 
 # Define camera 4
-define device camera4 name "camera 4" type camera location store1:aisle5
+define device camera4 name "camera 4" type camera location store1:null
+
+# Define camera 5
+define device camera5 name "camera 5" type camera location store1:aisle5
+
+# Define microphone 1
+define device microphone1 name "microphone 1" type microphone location store1:aisle1
+
+# Define microphone 2
+define device microphone2 name "microphone 2" type microphone location store1:aisle2
+
+# Define microphone 3
+define device microphone3 name "microphone 3" type microphone location store1:aisle3
+
+# Define microphone 4
+define device microphone4 name "microphone 4" type microphone location store1:null
 
 # Define turnstile 1
 define device turnstile1 name "turnstile 1" type turnstile location store1:null
@@ -107,10 +122,10 @@ define device speaker3 name "speaker 3" type speaker location store1:aisle3
 define device robot1 name "robot 1" type robot location store1:null
 
 # Define robot 2
-define device robot2 name "robot 2" type robot location store1:aisle1
+define device robot2 name "robot 2" type robot location store1:null
 
 # Define robot 3
-define device robot3 name "robot 3" type robot location store1:aisle2
+define device robot3 name "robot 3" type robot location store1:null
 
 # Create emergency event
 create event camera1 event "emergency fire aisle1"
@@ -118,10 +133,10 @@ create event camera1 event "emergency fire aisle1"
 # Show store 1
 show store store1
 
-# Update customer 1's location to aisle 1
-update customer customer1 location store1:aisle1
+# Customer Seen event for customer 1
+create event camera1 event "customer_seen customer1 aisle1"
 
-# Create basket event (customer 1 adds 6 of product 1 to their basket)
+# Basket Items event (customer 1 adds 6 of product 1 to their basket)
 create event camera1 event "basket_items customer1 add product1 6 aisle1:shelf1"
 
 # Show store 1 (count for product 1's inventory [inventory2] in aisle 5 [storeroom] should be 24)
@@ -130,7 +145,7 @@ show store store1
 # Show customer 1's basket items (should have 6 of product1)
 show basket_items customer1
 
-# Create basket event (customer 1 removes 6 of product 1 from their basket)
+# Basket Items event (customer 1 removes 6 of product 1 from their basket)
 create event camera1 event "basket_items customer1 remove product1 6 aisle1:shelf1"
 
 # Show store 1 (count for product 1's inventory [inventory2] in aisle 5 [storeroom] should be back to 30)
@@ -141,3 +156,24 @@ show basket_items customer1
 
 # Clean event
 create event camera1 event "clean product1 aisle1"
+
+# Broken Glass event
+create event microphone2 event "broken_glass aisle2"
+
+# Customer Seen event for customer 2
+create event camera3 event "customer_seen customer2 aisle3"
+
+# Missing Person event
+create event microphone1 event "missing_person customer2"
+
+# Customer Seen event for customer 1
+create event camera3 event "customer_seen customer1 aisle3"
+
+# Show customer 1
+show customer customer1
+
+# Show customer 2
+show customer customer2
+
+# Fetch Product event
+create event microphone3 event "fetch_product product2 4 aisle1:shelf1 customer1"

@@ -7,6 +7,9 @@
 
 package com.cscie97.store.model;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 /* *
  * Sensor class that represents a sensor that's in a store
  */
@@ -47,11 +50,36 @@ public class Sensor
     /* *
      * TODO: Receives events and notifies observers
      */
-    public String event(String perceivedEvent)
-    {
-        String eventToSend = perceivedEvent;
+    public String[] event(String perceivedEvent)
+    {        
+        // Delimit event string on whitespace and add each value to an array
+        String[] eventStrArr = perceivedEvent.split("\\s+");
         
-        return eventToSend;
+        // Initialize a new array for "Customer Seen" case
+        String[] newArray = null;
+        
+        // If event is "Customer Seen", add a timestamp
+        if (eventStrArr[0].equals("customer_seen"))
+        {
+            // Get the timestamp
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MMMM dd, yyyy HH:mm:ss");
+            LocalDateTime currentDateTime = LocalDateTime.now();
+            
+            // Create a new array
+            newArray = new String[eventStrArr.length + 1];
+            
+            // Copy eventStrArr to newArray
+            System.arraycopy(eventStrArr, 0,newArray, 0, eventStrArr.length);
+            
+            // Add the time stamp to newArray
+            newArray[eventStrArr.length] = dtf.format(currentDateTime);
+        }
+        
+        if (newArray == null)        
+            return eventStrArr;
+        
+        else
+            return newArray;
     }
     
     /* Utility Methods */

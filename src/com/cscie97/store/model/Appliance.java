@@ -53,16 +53,6 @@ public class Appliance extends Sensor
         }
     }
     
-    /* API Methods */
-    
-    /* *
-     * Receives appliance commands
-     */
-    public void command(String command)
-    {
-        // TODO: Necessary or delete? Maybe if have time
-    }
-    
     /* Nested Classes */   
     
     public class Turnstile
@@ -94,13 +84,13 @@ public class Appliance extends Sensor
     {
         // TODO
         
-        public boolean addressEmergency(String emergency, String aisle)
+        public boolean addressEmergency(String emergency, String aisleNumber)
         {
             boolean addressingEmergency = true;
             return addressingEmergency;
         }
         
-        public boolean assstLeavingCstmrs(String store)
+        public boolean assstLeavingCstmrs(String storeId)
         {
             boolean assstingLeavingCstmrs = true;
             return assstingLeavingCstmrs;
@@ -112,10 +102,14 @@ public class Appliance extends Sensor
             return restocking;
         }
         
-        public boolean clean(String product, String aisle)
+        public boolean clean(String productId, String aisleNumber)
         {
-            // TODO
-            
+            boolean cleaning = true;
+            return cleaning;
+        }
+        
+        public boolean brokenGlass(String aisleNumber)
+        {
             boolean cleaning = true;
             return cleaning;
         }

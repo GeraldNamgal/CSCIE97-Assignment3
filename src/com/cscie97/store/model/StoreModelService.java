@@ -26,7 +26,7 @@ public interface StoreModelService
     Customer defineCustomer(String id, String firstName, String lastName, String ageGroup, String type, String emailAddress
                 , String account, String auth_token);
     void showCustomer(String id, String auth_token);
-    void updateCustomer(String id, String storeAisleLoc, String auth_token);
+    void updateCustomer(String id, String storeAisleLoc, String dateTime, String auth_token);
     Basket getCustomerBasket(String customerId, String auth_token);
     void addBasketItem(String customerId, String productId, Integer itemCount, String auth_token);
     void removeBasketItem(String customerId, String productId, Integer itemCount, String auth_token);
@@ -40,4 +40,5 @@ public interface StoreModelService
     // Getters and Setters
     LinkedHashMap<String, Store> getStores();
     LinkedHashMap<String, Product> getProducts();
+    LinkedHashMap<String, Customer> getCustomers();
 }

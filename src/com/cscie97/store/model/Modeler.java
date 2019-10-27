@@ -7,16 +7,11 @@
 
 package com.cscie97.store.model;
 
-import com.cscie97.store.controller.Observer;
-import com.cscie97.store.controller.Subject;
 import com.cscie97.store.controller.UpdateEvent;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
-
-import java.time.format.DateTimeFormatter;
-import java.time.LocalDateTime; 
 
 /* *
  * The Store Model Service API implementation class that contains methods and attributes for creating,
@@ -66,7 +61,7 @@ public class Modeler implements StoreModelService, Subject
     }
     
     @Override
-    public void notifyObservers(Sensor sourceDevice, String eventToSend)
+    public void notifyObservers(Sensor sourceDevice, String[] eventToSend)
     {
         for (Observer observer : observers)
         {
@@ -104,7 +99,7 @@ public class Modeler implements StoreModelService, Subject
         }
         
         // TODO: Send event to device's event method       
-        String eventToSend = sourceDevice.event(simulatedEvent);
+        String[] eventToSend = sourceDevice.event(simulatedEvent);
         
         // TODO: Notify observers of the event sent back from device
         notifyObservers(sourceDevice, eventToSend);   
@@ -1311,7 +1306,7 @@ public class Modeler implements StoreModelService, Subject
      * Referenced https://compiler.javatpoint.com/opr/test.jsp?filename=CurrentDateTimeExample1
      */
     @Override
-    public void updateCustomer(String id, String storeAisleLoc, String auth_token)
+    public void updateCustomer(String id, String storeAisleLoc, String dateTime, String auth_token)
     {
         // Check that customer exists
         Customer customer = customers.get(id);
@@ -1392,10 +1387,8 @@ public class Modeler implements StoreModelService, Subject
             stores.get(storeId).getCustomers().remove(id);
         }
             
-        // Update customer's "time last seen"
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MMMM dd, yyyy HH:mm:ss");
-        LocalDateTime currentDateTime = LocalDateTime.now();
-        customer.setTimeLastSeen(dtf.format(currentDateTime));
+        // Update customer's "time last seen"        
+        customer.setTimeLastSeen(dateTime);
         
         // Change customer's location
         if (storeAisleLoc.equals("null"))
@@ -1940,11 +1933,13 @@ public class Modeler implements StoreModelService, Subject
         return stores;
     }    
 
+    @Override
     public LinkedHashMap<String, Product> getProducts()
     {
         return products;
     }    
 
+    @Override
     public LinkedHashMap<String, Customer> getCustomers()
     {
         return customers;

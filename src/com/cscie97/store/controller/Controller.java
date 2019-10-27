@@ -8,9 +8,11 @@ import java.util.Map.Entry;
 import com.cscie97.store.model.Aisle;
 import com.cscie97.store.model.Appliance;
 import com.cscie97.store.model.Inventory;
+import com.cscie97.store.model.Observer;
 import com.cscie97.store.model.Sensor;
 import com.cscie97.store.model.Store;
 import com.cscie97.store.model.StoreModelService;
+import com.cscie97.store.model.Subject;
 
 /* *
  * Controller implements the Observer interface (i.e., the observer in the observer pattern).
@@ -41,7 +43,7 @@ public class Controller implements Observer
         // TODO: In progress
         
         // Delimit event string on whitespace and add each value to an array
-        String[] eventStrArr = event.getPerceivedEvent().split("\\s+");
+        String[] eventStrArr = event.getPerceivedEvent();
         
         if ((eventStrArr.length == 3) && eventStrArr[0].equals("emergency"))
         {           
@@ -54,7 +56,7 @@ public class Controller implements Observer
                     || eventStrArr[1].equals("armed_intruder"))
             {
                 // Create new Emergency               
-                Command emergency = new Emergency(event.getSourceDevice(), eventStrArr);
+                Command emergency = new Emergency(event.getSourceDevice(), eventStrArr[1], eventStrArr[2]);
                 
                 // Run the Command's execute method
                 emergency.execute();
@@ -92,34 +94,38 @@ public class Controller implements Observer
                 return;
             }*/
             
-            Command basketItems = new BasketItems(event.getSourceDevice(), eventStrArr);
+            Command basketItems = new BasketItems(event.getSourceDevice(), eventStrArr[1], eventStrArr[2], eventStrArr[3], eventStrArr[4], eventStrArr[5]);
             basketItems.execute();
         }
         
         else if ((eventStrArr.length == 3) && eventStrArr[0].equals("clean"))
         {
-            Command clean = new Clean(event.getSourceDevice(), eventStrArr);
+            Command clean = new Clean(event.getSourceDevice(), eventStrArr[1], eventStrArr[2]);
             clean.execute();
         }
         
         else if ((eventStrArr.length == 2) && eventStrArr[0].equals("broken_glass"))
         {
-            
+            Command brokenGlass = new BrokenGlass(event.getSourceDevice(), eventStrArr[1]);
+            brokenGlass.execute();
         }
         
         else if ((eventStrArr.length == 2) && eventStrArr[0].equals("missing_person"))
         {
-            
+            Command missingPerson = new MissingPerson(event.getSourceDevice(), eventStrArr[1]);
+            missingPerson.execute();
         }
         
-        else if ((eventStrArr.length == 2) && eventStrArr[0].equals("customer_seen"))
+        else if ((eventStrArr.length == 4) && eventStrArr[0].equals("customer_seen"))
         {
-            
+            Command customerSeen = new CustomerSeen(event.getSourceDevice(), eventStrArr[1], eventStrArr[2], eventStrArr[3]);
+            customerSeen.execute();
         }
         
-        else if ((eventStrArr.length == 4) && eventStrArr[0].equals("fetch_product"))
+        else if ((eventStrArr.length == 5) && eventStrArr[0].equals("fetch_product"))
         {
-            
+            Command fetchProduct = new FetchProduct(event.getSourceDevice(), eventStrArr[1], Integer.parseInt(eventStrArr[2]), eventStrArr[3], eventStrArr[4]);
+            fetchProduct.execute();
         }
         
         else if ((eventStrArr.length == 2) && eventStrArr[0].equals("account_balance"))
@@ -155,11 +161,19 @@ public class Controller implements Observer
     
     public class Emergency extends Command
     {       
+        /* Variables */
+        
+        private String eventType;
+        private String aisleNumber;
+        
         /* Constructor */
         
-        public Emergency(Sensor sourceDevice, String[] eventStrArr)
+        public Emergency(Sensor sourceDevice, String eventType, String aisleNumber)
         {
-            super(sourceDevice, eventStrArr);
+            super(sourceDevice);
+            
+            this.eventType = eventType;
+            this.aisleNumber = aisleNumber;
         }
 
         /* Method(s) */
@@ -198,7 +212,7 @@ public class Controller implements Observer
                     if (appliance.getType().equals("speaker"))
                     {
                         // Announce emergency
-                        String announcement = "There is a " + eventStrArr[1] + " in " + store.getAisles().get(eventStrArr[2]).getName()
+                        String announcement = "There is a " + eventType + " in " + store.getAisles().get(aisleNumber).getName()
                                 + " aisle. Please leave store immediately!";
                         
                         if (appliance.getSpeaker().announce(announcement))
@@ -219,8 +233,8 @@ public class Controller implements Observer
             {
                 Appliance appliance = (Appliance) store.getDevices().get(robotKeys.get(0));                
                 
-                if (appliance.getRobot().addressEmergency(eventStrArr[1], store.getAisles().get(eventStrArr[2]).getNumber()))                
-                    System.out.println(appliance.getName() + ": Addressing " + eventStrArr[1] + " in " + store.getAisles().get(eventStrArr[2]).getName() + " aisle");
+                if (appliance.getRobot().addressEmergency(eventType, store.getAisles().get(aisleNumber).getNumber()))                
+                    System.out.println(appliance.getName() + ": Addressing " + eventType + " in " + store.getAisles().get(aisleNumber).getName() + " aisle");
             }
             
             // If store has more than one robot
@@ -242,9 +256,21 @@ public class Controller implements Observer
     {       
         /* Constructor */
         
-        public BasketItems(Sensor sourceDevice, String[] eventStrArr)
+        private String customerId;
+        private String addOrRemove;
+        private String productId;
+        private String number;
+        private String aisleShelfLoc;
+        
+        public BasketItems(Sensor sourceDevice, String customerId, String addOrRemove, String productId, String number, String aisleShelfLoc)
         {
-            super(sourceDevice, eventStrArr);
+            super(sourceDevice);
+            
+            this.customerId = customerId;
+            this.addOrRemove = addOrRemove;
+            this.productId = productId;
+            this.number = number;
+            this.aisleShelfLoc = aisleShelfLoc;
         }
 
         /* Method(s) */
@@ -262,8 +288,8 @@ public class Controller implements Observer
             
             for (Entry<String, Inventory> inventoryEntry : inventories.entrySet())
             {
-                if (inventoryEntry.getValue().getLocation().equals(store.getId() + ":" + eventStrArr[5])
-                        && inventoryEntry.getValue().getProductId().equals(eventStrArr[3]))
+                if (inventoryEntry.getValue().getLocation().equals(store.getId() + ":" + aisleShelfLoc)
+                        && inventoryEntry.getValue().getProductId().equals(productId))
                 {
                     inventory = inventoryEntry.getValue();
                     break;
@@ -271,7 +297,7 @@ public class Controller implements Observer
             }
             
             // Get customer's (virtual) basket
-            modeler.getCustomerBasket(eventStrArr[1], null);
+            modeler.getCustomerBasket(customerId, null);
             
             // Initialize array for getting store's robot Appliance map keys (for restocking)
             ArrayList<String> robotKeys = new ArrayList<String>();           
@@ -301,16 +327,16 @@ public class Controller implements Observer
             System.out.println();
             
             // If event was customer added (rather than removed) a basket item
-            if (eventStrArr[2].equals("add") && !inventory.equals(null))
+            if (addOrRemove.equals("add") && !inventory.equals(null))
             {                            
                 // Update customer's virtual basket items by adding item to it
-                modeler.addBasketItem(eventStrArr[1], eventStrArr[3], Integer.parseInt(eventStrArr[4]), null);
-                System.out.println("Controller Service: Adding " + Integer.parseInt(eventStrArr[4]) + " of " + eventStrArr[3] + " to customer "
-                        + eventStrArr[1] + "'s virtual basket");
+                modeler.addBasketItem(customerId, productId, Integer.parseInt(number), null);
+                System.out.println("Controller Service: Adding " + Integer.parseInt(number) + " of " + productId + " to customer "
+                        + customerId + "'s virtual basket");
                 
                 // Update inventory by decrementing product count on the shelf
-                modeler.updateInventory(inventory.getInventoryId(), (Integer.parseInt(eventStrArr[4]) * (-1)), null);
-                System.out.println("Controller Service: Updating inventory " + inventory.getInventoryId() + "'s count by " + Integer.parseInt(eventStrArr[4]) * (-1));                
+                modeler.updateInventory(inventory.getInventoryId(), (Integer.parseInt(number) * (-1)), null);
+                System.out.println("Controller Service: Updating inventory " + inventory.getInventoryId() + "'s count by " + Integer.parseInt(number) * (-1));                
                                
                 // If store has robots then command one to restock what customer removed
                 if (robotKeys.size() > 0)
@@ -332,7 +358,7 @@ public class Controller implements Observer
                      
                         for (Entry<String, Inventory> inventoryEntry : inventories.entrySet())
                         {
-                            if (inventoryEntry.getValue().getProductId().equals(eventStrArr[3])
+                            if (inventoryEntry.getValue().getProductId().equals(productId)
                                     && storeroomAisles.contains(inventoryEntry.getValue().getLocation().split(":")[1])
                                     && (inventoryEntry.getValue().getCount() > 0))
                             {                        
@@ -347,16 +373,16 @@ public class Controller implements Observer
                             Appliance appliance = (Appliance) store.getDevices().get(robotKeys.get(0));    
                             
                             // Call robot appliance's restock method (returns a boolean)
-                            if (appliance.getRobot().restock(eventStrArr[3], (inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[1]
-                                    + inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[2]), eventStrArr[5]))
+                            if (appliance.getRobot().restock(productId, (inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[1]
+                                    + inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[2]), aisleShelfLoc))
                             {
-                                System.out.println(appliance.getName() + ": Restocking " + eventStrArr[3] + " from "
+                                System.out.println(appliance.getName() + ": Restocking " + productId + " from "
                                         + (inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[1] + ":"
                                                 + inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[2]) + " (storeroom) "
-                                        + "to " + eventStrArr[5]);                    
+                                        + "to " + aisleShelfLoc);                    
                                 
                                 // If storeroom product supply is less than update amount then get all of the supply for restock
-                                Integer updateAmount = Integer.parseInt(eventStrArr[4]);
+                                Integer updateAmount = Integer.parseInt(number);
                                 if (inventories.get(storeroomInvIds.get(0)).getCount() < updateAmount)
                                     updateAmount = inventories.get(storeroomInvIds.get(0)).getCount();
                                 
@@ -400,15 +426,15 @@ public class Controller implements Observer
             }
             
             // Else if event was customer removed (rather than added) a basket item
-            else if (eventStrArr[2].equals("remove") && !inventory.equals(null))
+            else if (addOrRemove.equals("remove") && !inventory.equals(null))
             {
                 // Update basket items by removing item from it
-                modeler.removeBasketItem(eventStrArr[1], eventStrArr[3], Integer.parseInt(eventStrArr[4]), null);
-                System.out.println("Controller Service: Removing " + Integer.parseInt(eventStrArr[4]) + " of " + eventStrArr[3] + " from customer " + eventStrArr[1] + "'s virtual basket");
+                modeler.removeBasketItem(customerId, productId, Integer.parseInt(number), null);
+                System.out.println("Controller Service: Removing " + Integer.parseInt(number) + " of " + productId + " from customer " + customerId + "'s virtual basket");
             
                 // If there's room on the shelf to put back items, add them back to shelf
-                if ((inventory.getCapacity() - inventory.getCount()) >= Integer.parseInt(eventStrArr[4]))
-                    modeler.updateInventory(inventory.getInventoryId(), Integer.parseInt(eventStrArr[4]), null);
+                if ((inventory.getCapacity() - inventory.getCount()) >= Integer.parseInt(number))
+                    modeler.updateInventory(inventory.getInventoryId(), Integer.parseInt(number), null);
                 
                 // Else if there's no room on the floor shelf, put back on storeroom shelf
                 else
@@ -430,9 +456,9 @@ public class Controller implements Observer
                      
                         for (Entry<String, Inventory> inventoryEntry : inventories.entrySet())
                         {
-                            if (inventoryEntry.getValue().getProductId().equals(eventStrArr[3])
+                            if (inventoryEntry.getValue().getProductId().equals(productId)
                                     && storeroomAisles.contains(inventoryEntry.getValue().getLocation().split(":")[1])
-                                    && ((inventoryEntry.getValue().getCapacity() - inventoryEntry.getValue().getCount()) >= Integer.parseInt(eventStrArr[4])))
+                                    && ((inventoryEntry.getValue().getCapacity() - inventoryEntry.getValue().getCount()) >= Integer.parseInt(number)))
                             {                        
                                 storeroomInvIds.add(inventoryEntry.getValue().getInventoryId());
                             }
@@ -445,17 +471,17 @@ public class Controller implements Observer
                             Appliance appliance = (Appliance) store.getDevices().get(robotKeys.get(0));    
                             
                             // Call robot appliance's restock method (returns a boolean)
-                            if (appliance.getRobot().restock(eventStrArr[3], (inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[1]
-                                    + inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[2]), eventStrArr[5]))
+                            if (appliance.getRobot().restock(productId, (inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[1]
+                                    + inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[2]), aisleShelfLoc))
                             {
-                                System.out.println(appliance.getName() + ": No room on " + eventStrArr[5] + "; restocking "
-                                        + eventStrArr[3] + " to " + (inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[1] + ":"
+                                System.out.println(appliance.getName() + ": No room on " + aisleShelfLoc + "; restocking "
+                                        + productId + " to " + (inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[1] + ":"
                                                 + inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[2]) + " (storeroom)");
                                 
                                 // Update storeroom location's inventory
-                                modeler.updateInventory(inventories.get(storeroomInvIds.get(0)).getInventoryId(), Integer.parseInt(eventStrArr[4]), null);
+                                modeler.updateInventory(inventories.get(storeroomInvIds.get(0)).getInventoryId(), Integer.parseInt(number), null);
                                 System.out.println("Controller Service: Updating inventory " + inventories.get(storeroomInvIds.get(0)).getInventoryId()
-                                        + "'s (storeroom) count by " + Integer.parseInt(eventStrArr[4]));                                        
+                                        + "'s (storeroom) count by " + Integer.parseInt(number));                                        
                             }
                         }
                         
@@ -483,11 +509,19 @@ public class Controller implements Observer
     
     public class Clean extends Command
     {       
+        /* Variables */
+        
+        private String productId;
+        private String aisleNumber;
+        
         /* Constructor */
         
-        public Clean(Sensor sourceDevice, String[] eventStrArr)
+        public Clean(Sensor sourceDevice, String productId, String aisleNumber)
         {
-            super(sourceDevice, eventStrArr);
+            super(sourceDevice);
+            
+            this.productId = productId;
+            this.aisleNumber = aisleNumber;
         }
 
         /* Method(s) */
@@ -498,8 +532,6 @@ public class Controller implements Observer
             // Get the source store
             LinkedHashMap<String, Store> stores = modeler.getStores();
             Store store = stores.get(sourceDevice.getLocation().split(":")[0]);                
-            
-            // TODO: Update inventory for lost product
             
             // Initialize array for getting store's robot appliance map keys
             ArrayList<String> robotKeys = new ArrayList<String>();           
@@ -529,11 +561,11 @@ public class Controller implements Observer
             {
                 Appliance appliance = (Appliance) store.getDevices().get(robotKeys.get(0));                
                 
-                if (appliance.getRobot().clean(eventStrArr[1], eventStrArr[2]))
+                if (appliance.getRobot().clean(productId, aisleNumber))
                 {
                     System.out.println();
-                    System.out.println(appliance.getName() + ": Cleaning " + modeler.getProducts().get(eventStrArr[1]).getName()+ " in "
-                            + store.getAisles().get(eventStrArr[2]).getName() + " aisle");
+                    System.out.println(appliance.getName() + ": Cleaning " + modeler.getProducts().get(productId).getName()+ " in "
+                            + store.getAisles().get(aisleNumber).getName() + " aisle");
                 }
             }
             
@@ -543,5 +575,198 @@ public class Controller implements Observer
                 // TODO (???): Throw an Exception
             }
         }
+    }
+    
+    public class BrokenGlass extends Command
+    {
+        /* Variables */
+        
+        private String aisleNumber;
+        
+        /* Constructor */
+        
+        public BrokenGlass(Sensor sourceDevice, String aisleNumber)
+        {
+            super(sourceDevice);
+            
+            this.aisleNumber = aisleNumber;
+        }
+
+        @Override
+        public void execute()
+        {
+            // TODO
+            
+            // Get the source store
+            LinkedHashMap<String, Store> stores = modeler.getStores();
+            Store store = stores.get(sourceDevice.getLocation().split(":")[0]);                
+            
+            // Initialize array for getting store's robot appliance map keys
+            ArrayList<String> robotKeys = new ArrayList<String>();           
+            
+            // Iterate through devices to find robots
+            Sensor devicePointer;
+            for (Entry<String, Sensor> deviceEntry : store.getDevices().entrySet())
+            {
+                devicePointer = deviceEntry.getValue();
+                
+                // Check if device is an appliance              
+                if (Appliance.containsTypeEnum(devicePointer.getType()))
+                {
+                    Appliance appliance = (Appliance) devicePointer;             
+                    
+                    // If device is a robot
+                    if (appliance.getType().equals("robot"))
+                    {
+                        // Add robot key to array
+                        robotKeys.add(deviceEntry.getKey());                       
+                    }
+                }
+            }
+            
+            // If store has a robot, tell it to clean up the broke glass
+            if (robotKeys.size() > 0)
+            {
+                Appliance appliance = (Appliance) store.getDevices().get(robotKeys.get(0));                
+                
+                if (appliance.getRobot().brokenGlass(aisleNumber))
+                {
+                    System.out.println();
+                    System.out.println(appliance.getName() + ": Cleaning broken glass in " + store.getAisles().get(aisleNumber).getName() + " aisle");
+                }
+            }
+            
+            // Else if store doesn't have a robot
+            else
+            {
+                // TODO (???): Throw an Exception
+            }
+        }        
+    }
+    
+    public class MissingPerson extends Command
+    {
+        /* Variables */
+        
+        private String customerId;
+
+        /* Constructor */
+        
+        public MissingPerson(Sensor sourceDevice, String customerId)
+        {
+            super(sourceDevice);
+            
+            this.customerId = customerId;
+        }
+
+        @Override
+        public void execute()
+        {
+            // TODO Auto-generated method stub
+            
+            // Get the source store
+            LinkedHashMap<String, Store> stores = modeler.getStores();
+            Store store = stores.get(sourceDevice.getLocation().split(":")[0]);
+            
+            // Initialize string for getting store's speaker that's near customer
+            String speakerKey = null;           
+            
+            // Iterate through devices to find a speaker close to microphone/customer that triggered event
+            Sensor devicePointer;
+            for (Entry<String, Sensor> deviceEntry : store.getDevices().entrySet())
+            {
+                devicePointer = deviceEntry.getValue();
+                
+                // If device is a speaker and in same aisle as microphone, get its key and break out of loop      
+                if (devicePointer.getType().equals("speaker") && devicePointer.getLocation().split(":")[1].equals(sourceDevice.getLocation().split(":")[1]))
+                {
+                    speakerKey = deviceEntry.getKey();
+                    break;
+                }
+            }
+            
+            // If store speaker was found near microphone that triggered event, command it to announce message
+            if (speakerKey != null)
+            {
+                Appliance appliance = (Appliance) store.getDevices().get(speakerKey);               
+                
+                String announcement = "Customer " + customerId + " is in " + store.getCustomers().get(customerId).getLocation().split(":")[1] + " aisle";
+                
+                if (appliance.getSpeaker().announce(announcement))
+                {
+                    System.out.println();
+                    System.out.println(appliance.getName() + ": \"" + announcement + "\"");
+                }               
+            }
+            
+            // Else if store didn't have a speaker, command a robot to tell customer or something
+            else
+            {
+                // TODO (???): Throw an Exception
+            }                
+        }        
+    }
+    
+    public class CustomerSeen extends Command
+    {
+        /* Variables */
+        
+        private String customerId;
+        private String aisleId;
+        private String dateTime;
+        
+        /* Constructor */
+        
+        public CustomerSeen(Sensor sourceDevice, String customerId, String aisleId, String dateTime)
+        {
+            super(sourceDevice);
+            
+            this.customerId = customerId;
+            this.aisleId = aisleId;
+            this.dateTime = dateTime;
+        }
+
+        @Override
+        public void execute()
+        {
+            // TODO
+            
+            // Get the source store
+            LinkedHashMap<String, Store> stores = modeler.getStores();
+            Store store = stores.get(sourceDevice.getLocation().split(":")[0]);
+            
+            // Update customer's location
+            modeler.updateCustomer(customerId, store.getId() + ":" + aisleId, dateTime, null);
+        }        
+    }
+    
+    public class FetchProduct extends Command
+    {
+        /* Variables */
+        
+        private String productId;
+        private Integer number;
+        private String aisleShelfLoc;
+        private String customerId;
+        
+        /* Constructor */
+        
+        public FetchProduct(Sensor sourceDevice, String productId, Integer number, String aisleShelfLoc, String customerId)
+        {
+            super(sourceDevice);
+            
+            this.productId = productId;
+            this.number = number;
+            this.aisleShelfLoc = aisleShelfLoc;
+            this.customerId = customerId;
+        }
+
+        @Override
+        public void execute()
+        {
+            // TODO
+            
+            
+        }        
     }
 }
