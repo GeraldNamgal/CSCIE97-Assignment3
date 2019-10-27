@@ -123,9 +123,9 @@ public class Customer
         return location;
     }
 
-    public void setLocation(String location)
+    public void setLocation(String storeAisleLoc)
     {
-        this.location = location;
+        this.location = storeAisleLoc;
     }
 
     public AgeGroup getAgeGroup()

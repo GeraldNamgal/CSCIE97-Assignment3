@@ -38,15 +38,15 @@ public class CommandProcessor
     {       
         // Create Modeler if it doesn't exist
         if (modeler == null)
-            modeler = new Modeler();
-        
-        // Create Controller if it doesn't exist
-        if (controller == null)
-            controller = new Controller((Subject) modeler);
+            modeler = new Modeler();       
         
         // Create ledger command processor if it doesn't exist
         if (ledgerCp == null)
             ledgerCp = new com.cscie97.store.ledger.CommandProcessor();
+        
+        // Create Controller if it doesn't exist
+        if (controller == null)
+            controller = new Controller((Subject) modeler, ledgerCp);
     	
         parseAndProcess(command);
     }
@@ -62,15 +62,15 @@ public class CommandProcessor
     {       
         // Create Modeler if it doesn't exist
         if (modeler == null)
-            modeler = new Modeler();
-        
-        // Create Controller if it doesn't exist
-        if (controller == null)
-            controller = new Controller((Subject) modeler);
+            modeler = new Modeler();       
         
         // Create ledger command processor if it doesn't exist
         if (ledgerCp == null)
             ledgerCp = new com.cscie97.store.ledger.CommandProcessor();
+        
+        // Create Controller if it doesn't exist
+        if (controller == null)
+            controller = new Controller((Subject) modeler, ledgerCp);
     	
         // Check if the file is empty
         try

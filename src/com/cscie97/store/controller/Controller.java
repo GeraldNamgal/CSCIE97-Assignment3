@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 
 import com.cscie97.store.model.Aisle;
 import com.cscie97.store.model.Appliance;
+import com.cscie97.store.model.Basket;
 import com.cscie97.store.model.Inventory;
 import com.cscie97.store.model.Observer;
 import com.cscie97.store.model.Sensor;
@@ -22,17 +23,19 @@ public class Controller implements Observer
     /* Variables */
     
     private StoreModelService modeler;
+    private com.cscie97.store.ledger.CommandProcessor ledgerCp;
     // TODO: Log rule executions and resulting actions
     private String logger;
     
     /* Constructor */
     
-    public Controller(Subject modeler)
+    public Controller(Subject modeler, com.cscie97.store.ledger.CommandProcessor ledgerCp)
     {       
         // Register Controller with Model Service
         modeler.registerObserver(this);
         
         this.modeler = (StoreModelService) modeler;
+        this.ledgerCp = ledgerCp;
     }
 
     /* API Method(s) */
@@ -46,9 +49,7 @@ public class Controller implements Observer
         String[] eventStrArr = event.getPerceivedEvent();
         
         if ((eventStrArr.length == 3) && eventStrArr[0].equals("emergency"))
-        {           
-            // TODO: In progress
-            
+        {      
             // TODO: Validate location? (Unnecessary? Or do in Model Service?)            
             
             // TODO: Checking necessary here? -- Check for emergency types
@@ -130,17 +131,20 @@ public class Controller implements Observer
         
         else if ((eventStrArr.length == 2) && eventStrArr[0].equals("account_balance"))
         {
-            
+            Command accountBalance = new AccountBalance(event.getSourceDevice(), eventStrArr[1]);
+            accountBalance.execute();
         }
         
         else if ((eventStrArr.length == 2) && eventStrArr[0].equals("car_assist"))
         {
-            
+            Command carAssist = new CarAssist(event.getSourceDevice(), eventStrArr[1]);
+            carAssist.execute();
         }
         
         else if ((eventStrArr.length == 2) && eventStrArr[0].equals("checkout"))
         {
-            
+            Command checkout = new Checkout(event.getSourceDevice(), eventStrArr[1]);
+            checkout.execute();
         }
         
         else if ((eventStrArr.length == 2) && eventStrArr[0].equals("enter_store"))
@@ -556,23 +560,26 @@ public class Controller implements Observer
                 }
             }
             
+            System.out.println();
+            
             // If store has a robot, tell it to clean up the product
             if (robotKeys.size() > 0)
             {
                 Appliance appliance = (Appliance) store.getDevices().get(robotKeys.get(0));                
                 
                 if (appliance.getRobot().clean(productId, aisleNumber))
-                {
-                    System.out.println();
+                {                    
                     System.out.println(appliance.getName() + ": Cleaning " + modeler.getProducts().get(productId).getName()+ " in "
                             + store.getAisles().get(aisleNumber).getName() + " aisle");
                 }
             }
             
-            // Else if store doesn't have a robot
+            // Else if store doesn't have a robot; cancel actions
             else
             {
                 // TODO (???): Throw an Exception
+                
+                return;
             }
         }
     }
@@ -624,22 +631,25 @@ public class Controller implements Observer
                 }
             }
             
+            System.out.println();
+            
             // If store has a robot, tell it to clean up the broke glass
             if (robotKeys.size() > 0)
             {
                 Appliance appliance = (Appliance) store.getDevices().get(robotKeys.get(0));                
                 
                 if (appliance.getRobot().brokenGlass(aisleNumber))
-                {
-                    System.out.println();
+                {                    
                     System.out.println(appliance.getName() + ": Cleaning broken glass in " + store.getAisles().get(aisleNumber).getName() + " aisle");
                 }
             }
             
-            // Else if store doesn't have a robot
+            // Else if store doesn't have a robot; cancel actions
             else
             {
                 // TODO (???): Throw an Exception
+                
+                return;
             }
         }        
     }
@@ -668,7 +678,7 @@ public class Controller implements Observer
             LinkedHashMap<String, Store> stores = modeler.getStores();
             Store store = stores.get(sourceDevice.getLocation().split(":")[0]);
             
-            // Initialize string for getting store's speaker that's near customer
+            // Initialize string for getting store's speaker that's nearest customer
             String speakerKey = null;           
             
             // Iterate through devices to find a speaker close to microphone/customer that triggered event
@@ -685,6 +695,8 @@ public class Controller implements Observer
                 }
             }
             
+            System.out.println();
+            
             // If store speaker was found near microphone that triggered event, command it to announce message
             if (speakerKey != null)
             {
@@ -693,8 +705,7 @@ public class Controller implements Observer
                 String announcement = "Customer " + customerId + " is in " + store.getCustomers().get(customerId).getLocation().split(":")[1] + " aisle";
                 
                 if (appliance.getSpeaker().announce(announcement))
-                {
-                    System.out.println();
+                {                    
                     System.out.println(appliance.getName() + ": \"" + announcement + "\"");
                 }               
             }
@@ -735,8 +746,11 @@ public class Controller implements Observer
             LinkedHashMap<String, Store> stores = modeler.getStores();
             Store store = stores.get(sourceDevice.getLocation().split(":")[0]);
             
+            System.out.println();
+            
             // Update customer's location
             modeler.updateCustomer(customerId, store.getId() + ":" + aisleId, dateTime, null);
+            System.out.println("Controller Service: Updating customer " + customerId + "'s location");
         }        
     }
     
@@ -765,6 +779,317 @@ public class Controller implements Observer
         public void execute()
         {
             // TODO
+            
+            // Get the source store
+            LinkedHashMap<String, Store> stores = modeler.getStores();
+            Store store = stores.get(sourceDevice.getLocation().split(":")[0]);                
+            
+            // Initialize array for getting store's robot appliance map keys
+            ArrayList<String> robotKeys = new ArrayList<String>();           
+            
+            // Iterate through devices to find robots
+            Sensor devicePointer;
+            for (Entry<String, Sensor> deviceEntry : store.getDevices().entrySet())
+            {
+                devicePointer = deviceEntry.getValue();
+                
+                // Check if device is an appliance              
+                if (Appliance.containsTypeEnum(devicePointer.getType()))
+                {
+                    Appliance appliance = (Appliance) devicePointer;             
+                    
+                    // If device is a robot
+                    if (appliance.getType().equals("robot"))
+                    {
+                        // Add robot key to array
+                        robotKeys.add(deviceEntry.getKey());                       
+                    }
+                }
+            }
+            
+            System.out.println();
+            
+            // If store has a robot, tell it to fetch the product
+            if (robotKeys.size() > 0)
+            {
+                Appliance appliance = (Appliance) store.getDevices().get(robotKeys.get(0));
+                
+                // Get customer's location
+                String customerAisleLoc = modeler.getCustomers().get(customerId).getLocation().split(":")[1];
+                
+                if (appliance.getRobot().fetchProduct(productId, number, aisleShelfLoc, customerId, customerAisleLoc))
+                {                    
+                    System.out.println(appliance.getName() + ": Fetching " + number + " of product " + productId + " from " + aisleShelfLoc
+                            + " for customer " + customerId + " in " + customerAisleLoc + " aisle");                    
+               
+                    // Get inventory using aisleShelfLoc and productId (to update inventory)
+                    LinkedHashMap<String, Inventory> inventories = store.getInventories();
+                    Inventory inventory = null;
+                    
+                    for (Entry<String, Inventory> inventoryEntry : inventories.entrySet())
+                    {
+                        if (inventoryEntry.getValue().getLocation().equals(store.getId() + ":" + aisleShelfLoc)
+                                && inventoryEntry.getValue().getProductId().equals(productId))
+                        {
+                            inventory = inventoryEntry.getValue();
+                            break;
+                        }
+                    }
+                    
+                    if (!inventory.equals(null))
+                    {
+                        // Update inventory by decrementing product count on the shelf
+                        modeler.updateInventory(inventory.getInventoryId(), (number * (-1)), null);
+                        System.out.println("Controller Service: Updating inventory " + inventory.getInventoryId() + "'s count by " + (number * (-1)));                        
+                    }
+                    
+                    // Else inventory wasn't found; can't update it
+                    else
+                    {
+                        // TODO (???): Throw exception
+                        
+                        return;
+                    }              
+                    
+                    // Get customer's (virtual) basket (to update their basket items)
+                    modeler.getCustomerBasket(customerId, null);
+                    
+                    // Update customer's virtual basket items by adding item(s) to it
+                    modeler.addBasketItem(customerId, productId, number, null);
+                    System.out.println("Controller Service: Adding " + number + " of " + productId + " to customer "
+                            + customerId + "'s virtual basket");                       
+                }
+            }
+            
+            // Else if store doesn't have a robot; cancel actions
+            else
+            {
+                // TODO (???): Throw an Exception
+                
+                return;
+            }
+        }        
+    }
+    
+    public class AccountBalance extends Command
+    {
+        /* Variables */
+        
+        private String customerId;
+
+        /* Constructor */
+        
+        public AccountBalance(Sensor sourceDevice, String customerId)
+        {
+            super(sourceDevice);
+
+            this.customerId = customerId;
+        }
+
+        @Override
+        public void execute()
+        {
+            // TODO
+            
+            System.out.println();
+            
+            System.out.println("Controller Service: Computing the value of items in customer " + customerId + "'s basket");
+            
+            // Calculate the total value of the customer's basket items
+            Basket basket = modeler.getCustomerBasket(customerId, null);
+            LinkedHashMap<String, Integer> basketItems = basket.getBasketItems();
+            Integer itemsTotValue = 0;
+            for (Entry<String, Integer> integerEntry : basketItems.entrySet())
+            {
+                itemsTotValue += (integerEntry.getValue() * (modeler.getProducts().get(integerEntry.getKey()).getUnitPrice()));
+            }            
+            
+            System.out.println("Controller Service: Checking customer " + customerId + "'s account balance");           
+            
+            // Get the customer's account balance            
+            String customerBalance = ledgerCp.getAccountBalance(customerId);
+            
+            // Output aesthetics
+            if (customerBalance == null)
+                System.out.println();
+            
+            // Assemble expression string for a speaker near the customer to recite to customer            
+            String moreLessOrEqual = null;
+            
+            if (customerBalance != null)
+            {
+                if (Integer.parseInt(customerBalance) > itemsTotValue)
+                    moreLessOrEqual = "less than";
+                else if (Integer.parseInt(customerBalance) < itemsTotValue)
+                    moreLessOrEqual = "more than";
+                else
+                    moreLessOrEqual = "equal to";
+            }
+            
+            String announcement = null;
+            
+            if (customerBalance == null)
+            {
+                announcement = "Total value of basket items is " + itemsTotValue + " Units. Your account balance is unavailable at the moment";
+            }
+            
+            else
+            {
+                announcement = "Total value of basket items is " + itemsTotValue + " Units which is " + moreLessOrEqual + " your account balance "
+                        + "of " + customerBalance;
+            }
+            
+            // Get the source store
+            LinkedHashMap<String, Store> stores = modeler.getStores();
+            Store store = stores.get(sourceDevice.getLocation().split(":")[0]);
+            
+            // Initialize string for getting store's speaker that's nearest customer
+            String speakerKey = null;           
+            
+            // Iterate through devices to find a speaker close to microphone/customer that triggered event
+            Sensor devicePointer;
+            for (Entry<String, Sensor> deviceEntry : store.getDevices().entrySet())
+            {
+                devicePointer = deviceEntry.getValue();
+                
+                // If device is a speaker and in same aisle as microphone, get its key and break out of loop      
+                if (devicePointer.getType().equals("speaker") && devicePointer.getLocation().split(":")[1].equals(sourceDevice.getLocation().split(":")[1]))
+                {
+                    speakerKey = deviceEntry.getKey();
+                    break;
+                }
+            }         
+            
+            // If store speaker was found near microphone that triggered event, command it to announce message
+            if (speakerKey != null)
+            {
+                Appliance appliance = (Appliance) store.getDevices().get(speakerKey);       
+                
+                if (appliance.getSpeaker().announce(announcement))
+                {                    
+                    System.out.println(appliance.getName() + ": \"" + announcement + "\"");
+                }               
+            }
+            
+            // Else if store didn't have a speaker, command a robot to tell customer or something
+            else
+            {
+                // TODO (???): Throw an Exception
+            }              
+        }        
+    }
+    
+    public class CarAssist extends Command
+    {
+        /* Variables */
+        
+        private String customerId;
+        
+        /* Constructor */
+        
+        public CarAssist(Sensor sourceDevice, String customerId)
+        {
+            super(sourceDevice);
+            
+            this.customerId = customerId;
+        }
+
+        @Override
+        public void execute()
+        {
+            // TODO
+            
+            // Confirm that basket items' weight is actually exceeding 10 lbs.
+            Basket basket = modeler.getCustomerBasket(customerId, null);
+            LinkedHashMap<String, Integer> basketItems = basket.getBasketItems();
+            Integer itemsTotWeight = 0;
+            for (Entry<String, Integer> integerEntry : basketItems.entrySet())
+            {
+                itemsTotWeight += (integerEntry.getValue() * Integer.parseInt(modeler.getProducts().get(integerEntry.getKey()).getSize().split(" ")[0]));
+            }
+            
+            System.out.println();
+            
+            // TODO: Throw exception instead?
+            if (itemsTotWeight <= 10)
+            {                
+                System.out.println("Total weight of basket does not exceed 10 lbs; car assist not needed");
+                return;
+            }
+            
+            else
+            {
+             // Get the source store
+                LinkedHashMap<String, Store> stores = modeler.getStores();
+                Store store = stores.get(sourceDevice.getLocation().split(":")[0]);                
+                
+                // Initialize array for getting store's robot appliance map keys
+                ArrayList<String> robotKeys = new ArrayList<String>();           
+                
+                // Iterate through devices to find robots
+                Sensor devicePointer;
+                for (Entry<String, Sensor> deviceEntry : store.getDevices().entrySet())
+                {
+                    devicePointer = deviceEntry.getValue();
+                    
+                    // Check if device is an appliance              
+                    if (Appliance.containsTypeEnum(devicePointer.getType()))
+                    {
+                        Appliance appliance = (Appliance) devicePointer;             
+                        
+                        // If device is a robot
+                        if (appliance.getType().equals("robot"))
+                        {
+                            // Add robot key to array
+                            robotKeys.add(deviceEntry.getKey());                       
+                        }
+                    }
+                }
+                
+                // If store has a robot, tell it to fetch the product
+                if (robotKeys.size() > 0)
+                {
+                    Appliance appliance = (Appliance) store.getDevices().get(robotKeys.get(0));
+                    
+                    // Get customer's location
+                    String customerLocation = store.getDevices().get(sourceDevice.getId()).getName();
+                    
+                    if (appliance.getRobot().carAssist(customerId, sourceDevice.getLocation()))
+                    {                        
+                        System.out.println(appliance.getName() + ": Assisting customer " + customerId + " at " + customerLocation + " to car");                      
+                    }
+                }
+                
+                // Else if store doesn't have a robot; cancel actions
+                else
+                {
+                    // TODO (???): Throw an Exception
+                    
+                    return;
+                }
+            }
+        }       
+    }
+    
+    public class Checkout extends Command
+    {
+        /* Variables */
+        
+        private String customerId;
+        
+        /* Constructor */
+        
+        public Checkout(Sensor sourceDevice, String customerId)
+        {
+            super(sourceDevice);
+            
+            this.customerId = customerId;
+        }
+
+        @Override
+        public void execute()
+        {
+            // TODO 
             
             
         }        

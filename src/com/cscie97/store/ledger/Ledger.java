@@ -195,7 +195,7 @@ public class Ledger
             }
             
             else
-                throw new LedgerException("get account balance", "account balance information unavailable");
+                throw new LedgerException("get account balance", "account balance information unavailable at the moment");
         }
         
         catch (Exception exception)

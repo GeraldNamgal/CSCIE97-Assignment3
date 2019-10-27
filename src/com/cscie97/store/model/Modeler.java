@@ -1107,6 +1107,8 @@ public class Modeler implements StoreModelService, Subject
             }
         }
         
+        // TODO: Check that size is in pounds (convert if not / standardize somehow)?
+        
         // Change temperature string to an enum
         Shelf.Temperature temperatureEnum = Shelf.Temperature.valueOf(temperature);
         

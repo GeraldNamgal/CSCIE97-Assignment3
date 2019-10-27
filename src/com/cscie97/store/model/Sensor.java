@@ -37,12 +37,12 @@ public class Sensor
      * @param type Type of sensor (enum of valid sensors shown above)
      * @param location Location of sensor (e.g., store1:aisle1)
      */
-    public Sensor(String id, String name, String type, String location)
+    public Sensor(String id, String name, String type, String storeAisleLoc)
     {
         this.id = id;
         this.name = name;
         this.type = type;
-        this.location = location;        
+        this.location = storeAisleLoc;        
     }
     
     /* API Methods */

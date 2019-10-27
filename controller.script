@@ -35,7 +35,7 @@ define shelf store1:aisle2:shelf2 name "Cereals" level high description "cereal 
 define shelf store1:aisle5:shelf2 name "Cereals" level high description "cereal and oatmeal"
 
 # Define product 1
-define product product1 name "Soya Drink" description "soy milk brand" size "2 L" category "milk" unit_price 345 temperature refrigerated
+define product product1 name "Soya Drink" description "soy milk brand" size "2 lbs" category "milk" unit_price 35 temperature refrigerated
 
 # Define inventory 1 (on shelf 1 in aisle 1)
 define inventory inventory1 location store1:aisle1:shelf1 capacity 30 count 30 product product1
@@ -44,7 +44,7 @@ define inventory inventory1 location store1:aisle1:shelf1 capacity 30 count 30 p
 define inventory inventory2 location store1:aisle5:shelf1 capacity 30 count 30 product product1
 
 # Define product 2
-define product product2 name "Almond Drank" description "almond milk brand" size "2 L" category "milk" unit_price 350 temperature refrigerated
+define product product2 name "Almond Drank" description "almond milk brand" size "2 lbs" category "milk" unit_price 40 temperature refrigerated
 
 # Define inventory 3 (on shelf 1 in aisle 1)
 define inventory inventory3 location store1:aisle1:shelf1 capacity 40 count 40 product product2
@@ -53,7 +53,7 @@ define inventory inventory3 location store1:aisle1:shelf1 capacity 40 count 40 p
 define inventory inventory4 location store1:aisle5:shelf1 capacity 40 count 40 product product2
 
 # Define product 3
-define product product3 name "Crunchy Cereal" description "breakfast cereal" size "1 oz" category "breakfast food" unit_price 275
+define product product3 name "Crunchy Cereal" description "breakfast cereal" size "1 lbs" category "breakfast food" unit_price 27
 
 # Define inventory5 (on shelf 2 in aisle 2)
 define inventory inventory5 location store1:aisle2:shelf2 capacity 35 count 35 product product3
@@ -176,4 +176,22 @@ show customer customer1
 show customer customer2
 
 # Fetch Product event
-create event microphone3 event "fetch_product product2 4 aisle1:shelf1 customer1"
+create event microphone3 event "fetch_product product2 6 aisle1:shelf1 customer1"
+
+# Show store (aisle1:shelf1 should have 34 of product2)
+show store store1
+
+# Show customer 1's basket items (should have 6 of product2)
+show basket_items customer1
+
+# Account Balance event for customer1
+create event microphone3 event "account_balance customer1"
+
+# Show product2 (unit price should be 1/6 of total value of customer 1's basket items)
+show product product2
+
+# Checkout event for customer 1
+create event turnstile1 event "checkout customer1"
+
+# Car Assist event for customer 1
+create event turnstile1 event "car_assist customer1"

@@ -33,9 +33,9 @@ public class Appliance extends Sensor
      * @param type Type of appliance (e.g., speaker, robot, turnstile; enum of valid appliances shown above)
      * @param location The location of the appliance (e.g., aisle 2 in store 1)
      */
-    public Appliance(String id, String name, String type, String location)
+    public Appliance(String id, String name, String type, String storeAisleLoc)
     {
-        super(id, name, type, location);
+        super(id, name, type, storeAisleLoc);
         
         if (type.equals("turnstile"))
         {
@@ -112,6 +112,18 @@ public class Appliance extends Sensor
         {
             boolean cleaning = true;
             return cleaning;
+        }
+        
+        public boolean fetchProduct(String productId, Integer number, String aisleShelfLoc, String customerId, String customerAisleLoc)
+        {
+            boolean fetchingProduct = true;
+            return fetchingProduct;
+        }
+        
+        public boolean carAssist(String customerId, String customerLocation)
+        {
+            boolean carAssisting = true;
+            return carAssisting;
         }
     }
     

@@ -122,13 +122,14 @@ public class CommandProcessor
         }
     }
 
-    public void getAccountBalance(String address)
+    public String getAccountBalance(String address)
     {
-        Integer acctBalance = ledger.getAccountBalance(address);
-
-        // Print account's balance
-        if (acctBalance != null)
-            System.out.println("\nAccount \"" + address + "\" has balance of " + acctBalance + ".");
+        String acctBalance = null;
+        
+        if (ledger.getAccountBalance(address) != null)
+            acctBalance = Integer.toString(ledger.getAccountBalance(address));        
+       
+        return acctBalance;
     }
 
     public void getAccountBalances()
