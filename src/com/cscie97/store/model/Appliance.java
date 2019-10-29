@@ -108,8 +108,6 @@ public class Appliance extends Sensor
     
     public class Robot
     {
-        // TODO
-        
         public boolean addressEmergency(String emergency, String aisleNumber)
         {
             boolean addressingEmergency = true;

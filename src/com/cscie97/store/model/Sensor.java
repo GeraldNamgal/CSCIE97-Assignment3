@@ -48,7 +48,7 @@ public class Sensor
     /* API Methods */
     
     /* *
-     * TODO: Receives events and notifies observers
+     * Receives events
      */
     public String[] event(String perceivedEvent)
     {        

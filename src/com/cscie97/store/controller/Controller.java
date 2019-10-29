@@ -26,9 +26,7 @@ public class Controller implements Observer
     /* Variables */
     
     private StoreModelService modeler;
-    private com.cscie97.store.ledger.CommandProcessor ledgerCp;
-    // TODO: Log rule executions and resulting actions
-    private String logger;
+    private com.cscie97.store.ledger.CommandProcessor ledgerCp;    
     
     /* Constructor */
     
@@ -45,17 +43,20 @@ public class Controller implements Observer
     
     @Override
     public void update(UpdateEvent event)
+    {        
+        handleEvent(event);
+    }    
+    
+    /* Utility Method(s) */
+    
+    public void handleEvent(UpdateEvent event)
     {
-        // TODO: In progress
-        
-        // Delimit event string on whitespace and add each value to an array
+        // Get event's string array
         String[] eventStrArr = event.getPerceivedEvent();
         
         if ((eventStrArr.length == 3) && eventStrArr[0].equals("emergency"))
-        {      
-            // TODO: Validate location? (Unnecessary? Or do in Model Service?)            
-            
-            // TODO: Checking necessary here? -- Check for emergency types
+        {    
+            // Check for emergency types
             if (eventStrArr[1].equals("fire") || eventStrArr[1].equals("flood") || eventStrArr[1].equals("earthquake")
                     || eventStrArr[1].equals("armed_intruder"))
             {
@@ -68,16 +69,22 @@ public class Controller implements Observer
             
             else
             {
-                // TODO (???): Add an Exception
+                try
+                {
+                    throw new ControllerException("handle event; emergency", "event is not recognized");
+                }
                 
-                System.out.println("\nEvent is not recognized.");                
-                return;
+                catch (ControllerException exception)
+                {
+                    System.out.println();
+                    System.out.print(exception.getMessage());      
+                    return;
+                }
             }
         }
         
         else if ((eventStrArr.length == 6) && eventStrArr[0].equals("basket_items") && (eventStrArr[2].equals("add") || eventStrArr[2].equals("remove")))
-        {
-            /* TODO: Checking necessary here?
+        {            
             // Check if integer input is valid
             Boolean validInts = true;
             try
@@ -92,11 +99,18 @@ public class Controller implements Observer
             
             if (validInts == false)
             {
-                // TODO (???): Add an Exception
+                try
+                {
+                    throw new ControllerException("handle event; basket_items", "event is not recognized");
+                }
                 
-                System.out.println("\nEvent is not recognized.");
-                return;
-            }*/
+                catch (ControllerException exception)
+                {
+                    System.out.println();
+                    System.out.print(exception.getMessage());      
+                    return;
+                }
+            }
             
             Command basketItems = new BasketItems(event.getSourceDevice(), eventStrArr[1], eventStrArr[2], eventStrArr[3], eventStrArr[4], eventStrArr[5]);
             basketItems.execute();
@@ -128,6 +142,33 @@ public class Controller implements Observer
         
         else if ((eventStrArr.length == 5) && eventStrArr[0].equals("fetch_product"))
         {
+            // Check if integer input is valid
+            Boolean validInts = true;
+            try
+            {
+                Integer.parseInt(eventStrArr[2]);                
+            }
+
+            catch (NumberFormatException exception)
+            {
+                validInts = false;
+            }
+            
+            if (validInts == false)
+            {
+                try
+                {
+                    throw new ControllerException("handle event; fetch_product", "event is not recognized");
+                }
+                
+                catch (ControllerException exception)
+                {
+                    System.out.println();
+                    System.out.print(exception.getMessage());      
+                    return;
+                }
+            }
+            
             Command fetchProduct = new FetchProduct(event.getSourceDevice(), eventStrArr[1], Integer.parseInt(eventStrArr[2]), eventStrArr[3], eventStrArr[4]);
             fetchProduct.execute();
         }
@@ -158,10 +199,17 @@ public class Controller implements Observer
         
         else
         {
-            // TODO (???): Add an Exception
+            try
+            {
+                throw new ControllerException("handle event", "event is not recognized");
+            }
             
-            System.out.println("\nEvent is not recognized.");
-            return;
+            catch (ControllerException exception)
+            {
+                System.out.println();
+                System.out.print(exception.getMessage());      
+                return;
+            }
         }
     }
     
@@ -223,8 +271,8 @@ public class Controller implements Observer
                         String announcement = "There is a " + eventType + " in " + store.getAisles().get(aisleNumber).getName()
                                 + " aisle. Please leave store immediately!";
                         
-                        if (appliance.getSpeaker().announce(announcement))
-                            System.out.println(appliance.getName() + ": \"" + announcement + "\"");
+                        System.out.println(appliance.getName() + ": \"" + announcement + "\"");
+                        appliance.getSpeaker().announce(announcement);                            
                     }
                     
                     // If device is a robot
@@ -241,8 +289,8 @@ public class Controller implements Observer
             {
                 Appliance appliance = (Appliance) store.getDevices().get(robotKeys.get(0));                
                 
-                if (appliance.getRobot().addressEmergency(eventType, store.getAisles().get(aisleNumber).getNumber()))                
-                    System.out.println(appliance.getName() + ": Addressing " + eventType + " in " + store.getAisles().get(aisleNumber).getName() + " aisle");
+                System.out.println(appliance.getName() + ": Addressing " + eventType + " in " + store.getAisles().get(aisleNumber).getName() + " aisle");
+                appliance.getRobot().addressEmergency(eventType, store.getAisles().get(aisleNumber).getNumber());            
             }
             
             // If store has more than one robot
@@ -253,8 +301,8 @@ public class Controller implements Observer
                 {
                     appliance = (Appliance) store.getDevices().get(robotKeys.get(i));
                     
-                    if (appliance.getRobot().assstLeavingCstmrs(store.getId()))                    
-                        System.out.println(appliance.getName() + ": Assisting customers leaving " + store.getName());
+                    System.out.println(appliance.getName() + ": Assisting customers leaving " + store.getName());
+                    appliance.getRobot().assstLeavingCstmrs(store.getId());                
                 }
             }
         }
@@ -377,59 +425,81 @@ public class Controller implements Observer
                         // If product was found in storeroom
                         if (storeroomInvIds.size() > 0)
                         {
-                            // Have a robot restock; Update floor and storeroom inventories
+                            // Get robot
                             Appliance appliance = (Appliance) store.getDevices().get(robotKeys.get(0));    
                             
-                            // Call robot appliance's restock method (returns a boolean)
-                            if (appliance.getRobot().restock(productId, (inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[1]
-                                    + inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[2]), aisleShelfLoc))
-                            {
-                                System.out.println(appliance.getName() + ": Restocking " + productId + " from "
-                                        + (inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[1] + ":"
-                                                + inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[2]) + " (storeroom) "
-                                        + "to " + aisleShelfLoc);                    
+                            // Have robot restock
+                            System.out.println(appliance.getName() + ": Restocking " + productId + " from "
+                                    + (inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[1] + ":"
+                                            + inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[2]) + " (storeroom) "
+                                    + "to " + aisleShelfLoc);
+                            
+                            appliance.getRobot().restock(productId, (inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[1]
+                                    + inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[2]), aisleShelfLoc);                                         
                                 
-                                // If storeroom product supply is less than update amount then get all of the supply for restock
-                                Integer updateAmount = Integer.parseInt(number);
-                                if (inventories.get(storeroomInvIds.get(0)).getCount() < updateAmount)
-                                    updateAmount = inventories.get(storeroomInvIds.get(0)).getCount();
-                                
-                                // Update storeroom location's inventory
-                                System.out.println("Controller Service: Updating inventory " + inventories.get(storeroomInvIds.get(0)).getInventoryId()
-                                        + "'s (storeroom) count by " + (updateAmount * (-1)));
-                                modeler.updateInventory(inventories.get(storeroomInvIds.get(0)).getInventoryId(), (updateAmount * (-1)), null);                                                
-    
-                                // Update floor location's inventory
-                                System.out.println("Controller Service: Updating inventory " + inventory.getInventoryId() + "'s count by " + updateAmount);
-                                modeler.updateInventory(inventory.getInventoryId(), updateAmount, null);                                                
-                            }
+                            // If storeroom product supply is less than update amount then get all of the supply for restock
+                            Integer updateAmount = Integer.parseInt(number);
+                            if (inventories.get(storeroomInvIds.get(0)).getCount() < updateAmount)
+                                updateAmount = inventories.get(storeroomInvIds.get(0)).getCount();
+                            
+                            // Update storeroom location's inventory
+                            System.out.println("Controller Service: Updating inventory " + inventories.get(storeroomInvIds.get(0)).getInventoryId()
+                                    + "'s (storeroom) count by " + (updateAmount * (-1)));
+                            modeler.updateInventory(inventories.get(storeroomInvIds.get(0)).getInventoryId(), (updateAmount * (-1)), null);                                                
+
+                            // Update floor location's inventory
+                            System.out.println("Controller Service: Updating inventory " + inventory.getInventoryId() + "'s count by " + updateAmount);
+                            modeler.updateInventory(inventory.getInventoryId(), updateAmount, null);                    
                         }
                         
                         // Else there's no product to restock with
                         else
                         {
-                            // TODO (???): Add an Exception
+                            try
+                            {
+                                throw new ControllerException("Basket Items event restock", "no items to restock with");
+                            }
                             
-                            return;
-                        }
-                        
+                            catch (ControllerException exception)
+                            {
+                                System.out.println();
+                                System.out.print(exception.getMessage());      
+                                return;
+                            }
+                        }                        
                     }
                         
                     // Else there are no storeroom aisles; can't restock
                     else
                     {
-                        // TODO (???): Add an Exception
+                        try
+                        {
+                            throw new ControllerException("Basket Items event restock", "no storeroom aisles to restock from");
+                        }
                         
-                        return;
+                        catch (ControllerException exception)
+                        {
+                            System.out.println();
+                            System.out.print(exception.getMessage());      
+                            return;
+                        }
                     }
                 }
                 
-                // TODO (Exception?): Else there are no robots found that can restock
+                // Else there are no robots found that can restock
                 else
                 {
-                    // TODO (???): Add an Exception
+                    try
+                    {
+                        throw new ControllerException("Basket Items event restock", "no robots found to restock");
+                    }
                     
-                    return;
+                    catch (ControllerException exception)
+                    {
+                        System.out.println();
+                        System.out.print(exception.getMessage());      
+                        return;
+                    }
                 }
             }
             
@@ -475,30 +545,37 @@ public class Controller implements Observer
                         // If product storage was found in storeroom
                         if (storeroomInvIds.size() > 0)
                         {
-                            // Have a robot restock; Update floor and storeroom inventories
+                            // Get robot
                             Appliance appliance = (Appliance) store.getDevices().get(robotKeys.get(0));    
                             
-                            // Call robot appliance's restock method (returns a boolean)
-                            if (appliance.getRobot().restock(productId, (inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[1]
-                                    + inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[2]), aisleShelfLoc))
-                            {
-                                System.out.println(appliance.getName() + ": No room on " + aisleShelfLoc + "; restocking "
-                                        + productId + " to " + (inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[1] + ":"
-                                                + inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[2]) + " (storeroom)");
+                            // Have robot restock
+                            System.out.println(appliance.getName() + ": No room on " + aisleShelfLoc + "; restocking "
+                                    + productId + " to " + (inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[1] + ":"
+                                            + inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[2]) + " (storeroom)");
+                            
+                            appliance.getRobot().restock(productId, (inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[1]
+                                    + inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[2]), aisleShelfLoc);                       
                                 
-                                // Update storeroom location's inventory
-                                System.out.println("Controller Service: Updating inventory " + inventories.get(storeroomInvIds.get(0)).getInventoryId()
-                                        + "'s (storeroom) count by " + Integer.parseInt(number));
-                                modeler.updateInventory(inventories.get(storeroomInvIds.get(0)).getInventoryId(), Integer.parseInt(number), null);                                                                        
-                            }
+                            // Update storeroom location's inventory
+                            System.out.println("Controller Service: Updating inventory " + inventories.get(storeroomInvIds.get(0)).getInventoryId()
+                                    + "'s (storeroom) count by " + Integer.parseInt(number));
+                            modeler.updateInventory(inventories.get(storeroomInvIds.get(0)).getInventoryId(), Integer.parseInt(number), null);                    
                         }
                         
                         // Else there's no storage to put items back on
                         else
                         {
-                            // TODO (???): Add an Exception
+                            try
+                            {
+                                throw new ControllerException("Basket Items event; customer put items back", "there is no storage to put items back on");
+                            }
                             
-                            return;
+                            catch (ControllerException exception)
+                            {
+                                System.out.println();
+                                System.out.print(exception.getMessage());      
+                                return;
+                            }
                         }
                         
                     }
@@ -506,9 +583,17 @@ public class Controller implements Observer
                     // Else there are no storeroom aisles; can't restock
                     else
                     {
-                        // TODO (???): Add an Exception
+                        try
+                        {
+                            throw new ControllerException("Basket Items event; customer put items back", "no storeroom to put items in");
+                        }
                         
-                        return;
+                        catch (ControllerException exception)
+                        {
+                            System.out.println();
+                            System.out.print(exception.getMessage());      
+                            return;
+                        }
                     }
                 }                
             }                
@@ -569,21 +654,28 @@ public class Controller implements Observer
             // If store has a robot, tell it to clean up the product
             if (robotKeys.size() > 0)
             {
-                Appliance appliance = (Appliance) store.getDevices().get(robotKeys.get(0));                
+                Appliance appliance = (Appliance) store.getDevices().get(robotKeys.get(0));      
+                                    
+                System.out.println(appliance.getName() + ": Cleaning " + modeler.getProducts().get(productId).getName()+ " in "
+                        + store.getAisles().get(aisleNumber).getName() + " aisle");
                 
-                if (appliance.getRobot().clean(productId, aisleNumber))
-                {                    
-                    System.out.println(appliance.getName() + ": Cleaning " + modeler.getProducts().get(productId).getName()+ " in "
-                            + store.getAisles().get(aisleNumber).getName() + " aisle");
-                }
+                appliance.getRobot().clean(productId, aisleNumber);                
             }
             
             // Else if store doesn't have a robot; cancel actions
             else
             {
-                // TODO (???): Throw an Exception
+                try
+                {
+                    throw new ControllerException("Clean event", "no robot to perform cleaning");
+                }
                 
-                return;
+                catch (ControllerException exception)
+                {
+                    System.out.println();
+                    System.out.print(exception.getMessage());      
+                    return;
+                }
             }
         }
     }
@@ -606,8 +698,6 @@ public class Controller implements Observer
         @Override
         public void execute()
         {
-            // TODO
-            
             // Get the source store
             LinkedHashMap<String, Store> stores = modeler.getStores();
             Store store = stores.get(sourceDevice.getLocation().split(":")[0]);                
@@ -641,19 +731,25 @@ public class Controller implements Observer
             if (robotKeys.size() > 0)
             {
                 Appliance appliance = (Appliance) store.getDevices().get(robotKeys.get(0));                
-                
-                if (appliance.getRobot().brokenGlass(aisleNumber))
-                {                    
-                    System.out.println(appliance.getName() + ": Cleaning broken glass in " + store.getAisles().get(aisleNumber).getName() + " aisle");
-                }
+                                                                   
+                System.out.println(appliance.getName() + ": Cleaning broken glass in " + store.getAisles().get(aisleNumber).getName() + " aisle");
+                appliance.getRobot().brokenGlass(aisleNumber);                
             }
             
             // Else if store doesn't have a robot; cancel actions
             else
             {
-                // TODO (???): Throw an Exception
+                try
+                {
+                    throw new ControllerException("Broken Glass event", "no robot to clean up broken glass");
+                }
                 
-                return;
+                catch (ControllerException exception)
+                {
+                    System.out.println();
+                    System.out.print(exception.getMessage());      
+                    return;
+                }
             }
         }        
     }
@@ -676,8 +772,6 @@ public class Controller implements Observer
         @Override
         public void execute()
         {
-            // TODO Auto-generated method stub
-            
             // Get the source store
             LinkedHashMap<String, Store> stores = modeler.getStores();
             Store store = stores.get(sourceDevice.getLocation().split(":")[0]);
@@ -707,17 +801,25 @@ public class Controller implements Observer
                 Appliance appliance = (Appliance) store.getDevices().get(speakerKey);               
                 
                 String announcement = "Customer " + customerId + " is in " + store.getCustomers().get(customerId).getLocation().split(":")[1] + " aisle";
-                
-                if (appliance.getSpeaker().announce(announcement))
-                {                    
-                    System.out.println(appliance.getName() + ": \"" + announcement + "\"");
-                }               
+                                   
+                System.out.println(appliance.getName() + ": \"" + announcement + "\"");
+                appliance.getSpeaker().announce(announcement);                              
             }
             
-            // Else if store didn't have a speaker, command a robot to tell customer or something
+            // Else if store didn't have a speaker
             else
             {
-                // TODO (???): Throw an Exception
+                try
+                {
+                    throw new ControllerException("Missing Person event", "no available speakers near customer");
+                }
+                
+                catch (ControllerException exception)
+                {
+                    System.out.println();
+                    System.out.print(exception.getMessage());      
+                    return;
+                }
             }                
         }        
     }
@@ -743,9 +845,7 @@ public class Controller implements Observer
 
         @Override
         public void execute()
-        {
-            // TODO
-            
+        {          
             // Get the source store
             LinkedHashMap<String, Store> stores = modeler.getStores();
             Store store = stores.get(sourceDevice.getLocation().split(":")[0]);
@@ -782,8 +882,6 @@ public class Controller implements Observer
         @Override
         public void execute()
         {
-            // TODO
-            
             // Get the source store
             LinkedHashMap<String, Store> stores = modeler.getStores();
             Store store = stores.get(sourceDevice.getLocation().split(":")[0]);                
@@ -819,58 +917,74 @@ public class Controller implements Observer
                 Appliance appliance = (Appliance) store.getDevices().get(robotKeys.get(0));
                 
                 // Get customer's location
-                String customerAisleLoc = modeler.getCustomers().get(customerId).getLocation().split(":")[1];
+                String customerAisleLoc = modeler.getCustomers().get(customerId).getLocation().split(":")[1];       
                 
-                if (appliance.getRobot().fetchProduct(productId, number, aisleShelfLoc, customerId, customerAisleLoc))
-                {                    
-                    System.out.println(appliance.getName() + ": Fetching " + number + " of product " + productId + " from " + aisleShelfLoc
-                            + " for customer " + customerId + " in " + customerAisleLoc + " aisle");                    
-               
-                    // Get inventory using aisleShelfLoc and productId (to update inventory)
-                    LinkedHashMap<String, Inventory> inventories = store.getInventories();
-                    Inventory inventory = null;
-                    
-                    for (Entry<String, Inventory> inventoryEntry : inventories.entrySet())
+                // Have robot fetch product
+                System.out.println(appliance.getName() + ": Fetching " + number + " of product " + productId + " from " + aisleShelfLoc
+                        + " for customer " + customerId + " in " + customerAisleLoc + " aisle");
+                
+                appliance.getRobot().fetchProduct(productId, number, aisleShelfLoc, customerId, customerAisleLoc);
+           
+                // Get inventory using aisleShelfLoc and productId (to update inventory)
+                LinkedHashMap<String, Inventory> inventories = store.getInventories();
+                Inventory inventory = null;
+                
+                for (Entry<String, Inventory> inventoryEntry : inventories.entrySet())
+                {
+                    if (inventoryEntry.getValue().getLocation().equals(store.getId() + ":" + aisleShelfLoc)
+                            && inventoryEntry.getValue().getProductId().equals(productId))
                     {
-                        if (inventoryEntry.getValue().getLocation().equals(store.getId() + ":" + aisleShelfLoc)
-                                && inventoryEntry.getValue().getProductId().equals(productId))
-                        {
-                            inventory = inventoryEntry.getValue();
-                            break;
-                        }
+                        inventory = inventoryEntry.getValue();
+                        break;
                     }
-                    
-                    if (!inventory.equals(null))
-                    {
-                        // Update inventory by decrementing product count on the shelf
-                        System.out.println("Controller Service: Updating inventory " + inventory.getInventoryId() + "'s count by " + (number * (-1)));
-                        modeler.updateInventory(inventory.getInventoryId(), (number * (-1)), null);                                                
-                    }
-                    
-                    // Else inventory wasn't found; can't update it
-                    else
-                    {
-                        // TODO (???): Throw exception
-                        
-                        return;
-                    }              
-                    
-                    // Get customer's (virtual) basket (to update their basket items)
-                    modeler.getCustomerBasket(customerId, null);
-                    
-                    // Update customer's virtual basket items by adding item(s) to it
-                    System.out.println("Controller Service: Adding " + number + " of " + productId + " to customer "
-                            + customerId + "'s virtual basket");
-                    modeler.addBasketItem(customerId, productId, number, null);                                           
                 }
+                
+                if (!inventory.equals(null))
+                {
+                    // Update inventory by decrementing product count on the shelf
+                    System.out.println("Controller Service: Updating inventory " + inventory.getInventoryId() + "'s count by " + (number * (-1)));
+                    modeler.updateInventory(inventory.getInventoryId(), (number * (-1)), null);                                                
+                }
+                
+                // Else inventory wasn't found; can't update it
+                else
+                {
+                    try
+                    {
+                        throw new ControllerException("Fetch Product event", "no inventory found for product; can't update inventory");
+                    }
+                    
+                    catch (ControllerException exception)
+                    {
+                        System.out.println();
+                        System.out.print(exception.getMessage());      
+                        return;
+                    }
+                }              
+                
+                // Get customer's virtual basket (to update their basket items)
+                modeler.getCustomerBasket(customerId, null);
+                
+                // Update customer's virtual basket items by adding item(s) to it
+                System.out.println("Controller Service: Adding " + number + " of " + productId + " to customer "
+                        + customerId + "'s virtual basket");
+                modeler.addBasketItem(customerId, productId, number, null);        
             }
             
             // Else if store doesn't have a robot; cancel actions
             else
             {
-                // TODO (???): Throw an Exception
+                try
+                {
+                    throw new ControllerException("Fetch Product event", "no robots available to fetch product");
+                }
                 
-                return;
+                catch (ControllerException exception)
+                {
+                    System.out.println();
+                    System.out.print(exception.getMessage());      
+                    return;
+                }
             }
         }        
     }
@@ -893,8 +1007,6 @@ public class Controller implements Observer
         @Override
         public void execute()
         {
-            // TODO
-            
             System.out.println();
             
             System.out.println("Controller Service: Computing the value of items in customer " + customerId + "'s basket");
@@ -911,7 +1023,7 @@ public class Controller implements Observer
             System.out.println("Controller Service: Checking customer " + customerId + "'s account balance");           
             
             // Get the customer's account balance            
-            String customerBalance = ledgerCp.getAccountBalance(customerId);
+            String customerBalance = ledgerCp.getAccountBalance(modeler.getCustomers().get(customerId).getAccount());
             
             // Output aesthetics
             if (customerBalance == null)
@@ -968,17 +1080,25 @@ public class Controller implements Observer
             if (speakerKey != null)
             {
                 Appliance appliance = (Appliance) store.getDevices().get(speakerKey);       
-                
-                if (appliance.getSpeaker().announce(announcement))
-                {                    
-                    System.out.println(appliance.getName() + ": \"" + announcement + "\"");
-                }               
+                                          
+                System.out.println(appliance.getName() + ": \"" + announcement + "\"");
+                appliance.getSpeaker().announce(announcement);                               
             }
             
-            // Else if store didn't have a speaker, command a robot to tell customer or something
+            // Else if store didn't have a speaker
             else
             {
-                // TODO (???): Throw an Exception
+                try
+                {
+                    throw new ControllerException("Account Balance event", "no speaker available near customer");
+                }
+                
+                catch (ControllerException exception)
+                {
+                    System.out.println();
+                    System.out.print(exception.getMessage());      
+                    return;
+                }
             }              
         }        
     }
@@ -1001,8 +1121,6 @@ public class Controller implements Observer
         @Override
         public void execute()
         {
-            // TODO
-            
             // Get customer's basket
             Basket basket = modeler.getCustomerBasket(customerId, null);
             
@@ -1018,11 +1136,20 @@ public class Controller implements Observer
                 itemsTotWeight += (integerEntry.getValue() * Integer.parseInt(modeler.getProducts().get(integerEntry.getKey()).getSize().split(" ")[0]));
             }
             
-            // TODO: Throw exception instead?
+            // If weight of basket does not exceed 10 lbs
             if (itemsTotWeight <= 10)
-            {                
-                System.out.println("Total weight of basket does not exceed 10 lbs; car assist not needed");
-                return;
+            {          
+                try
+                {
+                    throw new ControllerException("Car Assist event", "total weight of basket does not exceed 10 lbs; car assist not needed");
+                }
+                
+                catch (ControllerException exception)
+                {
+                    System.out.println();
+                    System.out.print(exception.getMessage());      
+                    return;
+                }
             }
             
             else
@@ -1060,20 +1187,26 @@ public class Controller implements Observer
                     Appliance appliance = (Appliance) store.getDevices().get(robotKeys.get(0));
                     
                     // Get customer's location
-                    String customerLocation = store.getDevices().get(sourceDevice.getId()).getName();
-                    
-                    if (appliance.getRobot().carAssist(customerId, sourceDevice.getLocation()))
-                    {                        
-                        System.out.println(appliance.getName() + ": Assisting customer " + customerId + " at " + customerLocation + " to car");                      
-                    }
+                    String customerLocation = store.getDevices().get(sourceDevice.getId()).getName();            
+                                            
+                    System.out.println(appliance.getName() + ": Assisting customer " + customerId + " at " + customerLocation + " to car");
+                    appliance.getRobot().carAssist(customerId, sourceDevice.getLocation());                    
                 }
                 
                 // Else if store doesn't have a robot; cancel actions
                 else
                 {
-                    // TODO (???): Throw an Exception
+                    try
+                    {
+                        throw new ControllerException("Car Assist event", "store does not have robots to help customers");
+                    }
                     
-                    return;
+                    catch (ControllerException exception)
+                    {
+                        System.out.println();
+                        System.out.print(exception.getMessage());      
+                        return;
+                    }
                 }
             }
         }       
@@ -1097,8 +1230,6 @@ public class Controller implements Observer
         @Override
         public void execute()
         {
-            // TODO 
-            
             // Get the source store
             LinkedHashMap<String, Store> stores = modeler.getStores();
             Store store = stores.get(sourceDevice.getLocation().split(":")[0]);
@@ -1114,8 +1245,8 @@ public class Controller implements Observer
             else
                 expression = "Hello";
             Appliance appliance = (Appliance) sourceDevice;
-            if (appliance.getTurnstile().speak(expression))
-                System.out.println(appliance.getName() + ": \"" + expression + "\"");           
+            System.out.println(appliance.getName() + ": \"" + expression + "\"");
+            appliance.getTurnstile().speak(expression);                           
             
             // Initialize variables for customer's basket items (for registered customers)
             Integer itemsTotValue = 0;
@@ -1143,44 +1274,74 @@ public class Controller implements Observer
             {
                 // Start Transaction
                 System.out.println("Controller Service: Starting transaction for " + customerId + "'s checkout");
-                String txnId = ledgerCp.processTransaction("0", itemsTotValue, 10, "checkout for " + customerId, customerId, store.getId());
+                String txnId = ledgerCp.processTransaction("0", itemsTotValue, 10, "checkout for " + customerId, customer.getAccount(), store.getId());
                 System.out.println("Controller Service: Transaction submitted and processed for " + customerId + "'s checkout");
                 
                 // If transaction came back null, have turnstile speaker talk to customer
                 if (txnId == null)
                 {
-                    expression = "Transaction failed, " + store.getCustomers().get(customerId).getFirstName() + ". Please return items to store. Thank you!";                
-                    if (appliance.getTurnstile().speak(expression))
-                        System.out.println(appliance.getName() + ": \"" + expression + "\"");
+                    try
+                    {
+                        throw new ControllerException("Checkout; process transaction", "transaction returned null");
+                    }
                     
-                    return;
+                    catch (ControllerException exception)
+                    {
+                        System.out.println();
+                        System.out.print(exception.getMessage()); 
+                        System.out.println();
+                        expression = "Transaction failed, " + store.getCustomers().get(customerId).getFirstName() + ". Please return items to store. Thank you!";                
+                        System.out.println(appliance.getName() + ": \"" + expression + "\"");
+                        appliance.getTurnstile().speak(expression);
+                        return;
+                    }          
                 }
                 
                 // If payer does not have enough funds, have turnstile speaker talk to customer
                 if (txnId != null && txnId.equals("payer has insufficient funds"))
                 {
-                    expression = "You do not have enough funds in your account for checkout, " + store.getCustomers().get(customerId).getFirstName()
-                            + ". Please return some or all items to store before checking out again. Thank you!";
+                    try
+                    {
+                        throw new ControllerException("Checkout; process transaction", "payer has insufficient funds");
+                    }
                     
-                    if (appliance.getTurnstile().speak(expression))
+                    catch (ControllerException exception)
+                    {
+                        System.out.println();
+                        System.out.print(exception.getMessage());
+                        System.out.println();
+                        expression = "You do not have enough funds in your account for checkout, " + store.getCustomers().get(customerId).getFirstName()
+                                + ". Please return some or all items to store before checking out again. Thank you!";
+                        
                         System.out.println(appliance.getName() + ": \"" + expression + "\"");
-                    
-                    return;
+                        appliance.getTurnstile().speak(expression);
+                        return;
+                    }            
                 }
                     
                 // If payer account was not found, have turnstile speaker talk to customer
                 if (txnId != null && txnId.equals("payer account not found"))
                 {
-                    expression = "Your Blockchain account was not found, " + store.getCustomers().get(customerId).getFirstName()
-                            + ". Please return items to store.";
+                    try
+                    {
+                        throw new ControllerException("Checkout; process transaction", "payer account not found");
+                    }
                     
-                    if (appliance.getTurnstile().speak(expression))
+                    catch (ControllerException exception)
+                    {
+                        System.out.println();
+                        System.out.print(exception.getMessage());
+                        System.out.println();
+                        expression = "Your Blockchain account was not found, " + store.getCustomers().get(customerId).getFirstName()
+                                + ". Please return items to store.";
+                        
                         System.out.println(appliance.getName() + ": \"" + expression + "\"");
-                    
-                    return;
+                        appliance.getTurnstile().speak(expression);
+                        return;
+                    }                   
                 }           
                      
-                // TODO: If txn processed successfully
+                // If txn processed successfully
                 if (txnId != null)
                 {               
                     // Get weight of basket items                     
@@ -1194,8 +1355,8 @@ public class Controller implements Observer
                     if (itemsTotWeight > 10)
                     {
                         expression = "Your basket items weigh more than 10 pounds. Please wait for a robot to assist you to your car";
-                        if (appliance.getTurnstile().speak(expression))
-                            System.out.println(appliance.getName() + ": \"" + expression + "\"");
+                        System.out.println(appliance.getName() + ": \"" + expression + "\"");
+                        appliance.getTurnstile().speak(expression);                            
                         
                         System.out.println(appliance.getName() + ": Calling for a robot to assist customer " + customerId + " to their car");                    
                         Command carAssist = new CarAssist(sourceDevice, customerId);
@@ -1209,16 +1370,16 @@ public class Controller implements Observer
                 expression = "You may pass through turnstile";                
             else    
                 expression = "Customer " + store.getCustomers().get(customerId).getFirstName() + ", you may pass through turnstile";
-            if (appliance.getTurnstile().speak(expression))
-                System.out.println(appliance.getName() + ": \"" + expression + "\"");          
+            System.out.println(appliance.getName() + ": \"" + expression + "\"");
+            appliance.getTurnstile().speak(expression);                          
             
             // Open turnstile
             if (customer == null)
                 expression = ": Person passed through turnstile";
             else
                 expression = ": Customer " + customerId + " passed through turnstile";
-            if (appliance.getTurnstile().letPersonPass())
-                System.out.println(appliance.getName() + expression);
+            System.out.println(appliance.getName() + expression);
+            appliance.getTurnstile().letPersonPass();                
             
             // Tell customer goodbye
             if (customer == null)
@@ -1226,8 +1387,8 @@ public class Controller implements Observer
             else
                 expression = "Goodbye, customer " + store.getCustomers().get(customerId).getFirstName() + ". Thanks for shopping at "
                         + store.getName() + "!";
-            if (appliance.getTurnstile().speak(expression))
-                System.out.println(appliance.getName() + ": \"" + expression + "\"");
+            System.out.println(appliance.getName() + ": \"" + expression + "\"");
+            appliance.getTurnstile().speak(expression);                
             
             // If customer was a registered customer, clear their basket
             if ((customer != null) && customer.getType().toString().equals("registered"))
@@ -1243,10 +1404,7 @@ public class Controller implements Observer
                 DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MMMM dd, yyyy HH:mm:ss");
                 LocalDateTime currentDateTime = LocalDateTime.now();
                 modeler.updateCustomer(customerId, "null", dtf.format(currentDateTime), null);
-            }
-                       
-            // TODO: Print how much store profited?
-            
+            }           
         }        
     }
     
@@ -1268,8 +1426,6 @@ public class Controller implements Observer
         @Override
         public void execute()
         {
-            // TODO
-            
             // Get the source store
             LinkedHashMap<String, Store> stores = modeler.getStores();
             Store store = stores.get(sourceDevice.getLocation().split(":")[0]);
@@ -1290,11 +1446,21 @@ public class Controller implements Observer
             // If customer is not registered or not a guest
             if (customer == null)
             {
-                expression = "You do not have a registered account with " + store.getName() + ". Please register one and come back later";
-                if (appliance.getTurnstile().speak(expression))
-                    System.out.println(appliance.getName() + ": \"" + expression + "\"");
+                try
+                {
+                    throw new ControllerException("Enter Store event", "person is not registered");
+                }
                 
-                return;
+                catch (ControllerException exception)
+                {
+                    System.out.println();
+                    System.out.print(exception.getMessage());
+                    System.out.println();
+                    expression = "You do not have a registered account with " + store.getName() + ". Please register one and come back later";
+                    System.out.println(appliance.getName() + ": \"" + expression + "\"");
+                    appliance.getTurnstile().speak(expression);
+                    return;
+                }       
             }
             
             // Initialize customer balance string
@@ -1304,39 +1470,58 @@ public class Controller implements Observer
             if (customer.getType().toString().equals("registered"))
             {
                 System.out.println("Controller Service: Checking customer " + customerId + "'s account for positive balance");                 
-                customerBalance = ledgerCp.getAccountBalance(customerId);                  
+                customerBalance = ledgerCp.getAccountBalance(customer.getAccount());                  
                 
                 // If account balance returned null
                 if (customerBalance == null)
                 {
-                    System.out.println();
-                    expression = "Your account information is unavailable. Please come back at another time";
-                    if (appliance.getTurnstile().speak(expression))
-                        System.out.println(appliance.getName() + ": \"" + expression + "\"");
+                    try
+                    {
+                        throw new ControllerException("Enter Store event", "customer's account information is unavailable");
+                    }
                     
-                    return;
+                    catch (ControllerException exception)
+                    {
+                        System.out.println();
+                        System.out.print(exception.getMessage());
+                        System.out.println();
+                        expression = "Your account information is unavailable. Please come back at another time";
+                        System.out.println(appliance.getName() + ": \"" + expression + "\"");
+                        appliance.getTurnstile().speak(expression);
+                        return;
+                    }                    
                 }
             }           
             
             // If customer has no funds in their account
             if ((customerBalance != null) && (Integer.parseInt(customerBalance) <= 0))
             {
-                expression = "You have no funds in your account. Please come back when you do";
-                if (appliance.getTurnstile().speak(expression))
-                    System.out.println(appliance.getName() + ": \"" + expression + "\"");
+                try
+                {
+                    throw new ControllerException("Enter Store event", "customer has no funds in their account");
+                }
                 
-                return;
+                catch (ControllerException exception)
+                {
+                    System.out.println();
+                    System.out.print(exception.getMessage());
+                    System.out.println();
+                    expression = "You have no funds in your account. Please come back when you do";
+                    System.out.println(appliance.getName() + ": \"" + expression + "\"");
+                    appliance.getTurnstile().speak(expression);
+                    return;
+                }                
             }          
             
             // Tell customer they can pass through turnstile and greet them
             expression = "Hello, customer " + modeler.getCustomers().get(customerId).getFirstName() + ", you may pass through the turnstile. "
                     + "Welcome to " + store.getName() + "!";
-            if (appliance.getTurnstile().speak(expression))
-                System.out.println(appliance.getName() + ": \"" + expression + "\"");          
+            System.out.println(appliance.getName() + ": \"" + expression + "\"");
+            appliance.getTurnstile().speak(expression);                          
             
             // Open turnstile
-            if (appliance.getTurnstile().letPersonPass())
-                System.out.println(appliance.getName() + ": Customer " + customerId + " passed through turnstile");
+            System.out.println(appliance.getName() + ": Customer " + customerId + " passed through turnstile");
+            appliance.getTurnstile().letPersonPass();                
             
             // Update customer's location
             System.out.println("Controller Service: Updating customer " + customerId + "'s location");

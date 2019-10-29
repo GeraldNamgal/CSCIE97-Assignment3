@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 
@@ -95,7 +94,7 @@ public class CommandProcessor
 
     public void createAccount(String address)
     {
-        Account account = ledger.createAccount(address);
+        ledger.createAccount(address);
     }
 
     public String processTransaction(String transactionId, Integer amount, Integer fee, String payload, String payer, String receiver)
@@ -263,8 +262,7 @@ public class CommandProcessor
                 && (indicesOfOpeningQuotes.get(1) <= indicesOfClosingQuotes.get(1))
                 && (indicesOfOpeningQuotes.get(0) == 3) && (indicesOfClosingQuotes.get(1) == (splitStringArr.length - 1))
                 && ((indicesOfOpeningQuotes.get(1) - 2) == (indicesOfClosingQuotes.get(0))))
-        {            
-            // TODO: Check if ledger exists already
+        {          
             if (this.ledger != null)
             {
                 try
