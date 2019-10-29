@@ -1,5 +1,7 @@
 package com.cscie97.store.controller;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -8,6 +10,7 @@ import java.util.Map.Entry;
 import com.cscie97.store.model.Aisle;
 import com.cscie97.store.model.Appliance;
 import com.cscie97.store.model.Basket;
+import com.cscie97.store.model.Customer;
 import com.cscie97.store.model.Inventory;
 import com.cscie97.store.model.Observer;
 import com.cscie97.store.model.Sensor;
@@ -149,7 +152,8 @@ public class Controller implements Observer
         
         else if ((eventStrArr.length == 2) && eventStrArr[0].equals("enter_store"))
         {
-            
+            Command enterStore = new EnterStore(event.getSourceDevice(), eventStrArr[1]);
+            enterStore.execute();
         }
         
         else
@@ -334,14 +338,14 @@ public class Controller implements Observer
             if (addOrRemove.equals("add") && !inventory.equals(null))
             {                            
                 // Update customer's virtual basket items by adding item to it
-                modeler.addBasketItem(customerId, productId, Integer.parseInt(number), null);
                 System.out.println("Controller Service: Adding " + Integer.parseInt(number) + " of " + productId + " to customer "
                         + customerId + "'s virtual basket");
+                modeler.addBasketItem(customerId, productId, Integer.parseInt(number), null);                
                 
                 // Update inventory by decrementing product count on the shelf
-                modeler.updateInventory(inventory.getInventoryId(), (Integer.parseInt(number) * (-1)), null);
                 System.out.println("Controller Service: Updating inventory " + inventory.getInventoryId() + "'s count by " + Integer.parseInt(number) * (-1));                
-                               
+                modeler.updateInventory(inventory.getInventoryId(), (Integer.parseInt(number) * (-1)), null);
+                             
                 // If store has robots then command one to restock what customer removed
                 if (robotKeys.size() > 0)
                 {                
@@ -391,13 +395,13 @@ public class Controller implements Observer
                                     updateAmount = inventories.get(storeroomInvIds.get(0)).getCount();
                                 
                                 // Update storeroom location's inventory
-                                modeler.updateInventory(inventories.get(storeroomInvIds.get(0)).getInventoryId(), (updateAmount * (-1)), null);
                                 System.out.println("Controller Service: Updating inventory " + inventories.get(storeroomInvIds.get(0)).getInventoryId()
-                                        + "'s (storeroom) count by " + (updateAmount * (-1)));                
+                                        + "'s (storeroom) count by " + (updateAmount * (-1)));
+                                modeler.updateInventory(inventories.get(storeroomInvIds.get(0)).getInventoryId(), (updateAmount * (-1)), null);                                                
     
                                 // Update floor location's inventory
-                                modeler.updateInventory(inventory.getInventoryId(), updateAmount, null);
-                                System.out.println("Controller Service: Updating inventory " + inventory.getInventoryId() + "'s count by " + updateAmount);                
+                                System.out.println("Controller Service: Updating inventory " + inventory.getInventoryId() + "'s count by " + updateAmount);
+                                modeler.updateInventory(inventory.getInventoryId(), updateAmount, null);                                                
                             }
                         }
                         
@@ -433,9 +437,9 @@ public class Controller implements Observer
             else if (addOrRemove.equals("remove") && !inventory.equals(null))
             {
                 // Update basket items by removing item from it
+                System.out.println("Controller Service: Removing " + Integer.parseInt(number) + " of " + productId + " from customer " + customerId + "'s virtual basket");                
                 modeler.removeBasketItem(customerId, productId, Integer.parseInt(number), null);
-                System.out.println("Controller Service: Removing " + Integer.parseInt(number) + " of " + productId + " from customer " + customerId + "'s virtual basket");
-            
+                
                 // If there's room on the shelf to put back items, add them back to shelf
                 if ((inventory.getCapacity() - inventory.getCount()) >= Integer.parseInt(number))
                     modeler.updateInventory(inventory.getInventoryId(), Integer.parseInt(number), null);
@@ -483,9 +487,9 @@ public class Controller implements Observer
                                                 + inventories.get(storeroomInvIds.get(0)).getLocation().split(":")[2]) + " (storeroom)");
                                 
                                 // Update storeroom location's inventory
-                                modeler.updateInventory(inventories.get(storeroomInvIds.get(0)).getInventoryId(), Integer.parseInt(number), null);
                                 System.out.println("Controller Service: Updating inventory " + inventories.get(storeroomInvIds.get(0)).getInventoryId()
-                                        + "'s (storeroom) count by " + Integer.parseInt(number));                                        
+                                        + "'s (storeroom) count by " + Integer.parseInt(number));
+                                modeler.updateInventory(inventories.get(storeroomInvIds.get(0)).getInventoryId(), Integer.parseInt(number), null);                                                                        
                             }
                         }
                         
@@ -749,8 +753,8 @@ public class Controller implements Observer
             System.out.println();
             
             // Update customer's location
-            modeler.updateCustomer(customerId, store.getId() + ":" + aisleId, dateTime, null);
             System.out.println("Controller Service: Updating customer " + customerId + "'s location");
+            modeler.updateCustomer(customerId, store.getId() + ":" + aisleId, dateTime, null);            
         }        
     }
     
@@ -839,8 +843,8 @@ public class Controller implements Observer
                     if (!inventory.equals(null))
                     {
                         // Update inventory by decrementing product count on the shelf
-                        modeler.updateInventory(inventory.getInventoryId(), (number * (-1)), null);
-                        System.out.println("Controller Service: Updating inventory " + inventory.getInventoryId() + "'s count by " + (number * (-1)));                        
+                        System.out.println("Controller Service: Updating inventory " + inventory.getInventoryId() + "'s count by " + (number * (-1)));
+                        modeler.updateInventory(inventory.getInventoryId(), (number * (-1)), null);                                                
                     }
                     
                     // Else inventory wasn't found; can't update it
@@ -855,9 +859,9 @@ public class Controller implements Observer
                     modeler.getCustomerBasket(customerId, null);
                     
                     // Update customer's virtual basket items by adding item(s) to it
-                    modeler.addBasketItem(customerId, productId, number, null);
                     System.out.println("Controller Service: Adding " + number + " of " + productId + " to customer "
-                            + customerId + "'s virtual basket");                       
+                            + customerId + "'s virtual basket");
+                    modeler.addBasketItem(customerId, productId, number, null);                                           
                 }
             }
             
@@ -999,16 +1003,20 @@ public class Controller implements Observer
         {
             // TODO
             
-            // Confirm that basket items' weight is actually exceeding 10 lbs.
+            // Get customer's basket
             Basket basket = modeler.getCustomerBasket(customerId, null);
+            
+            // If basket returned null, return (Modeler's getCustomerBasket will thrown an exception)
+            if (basket == null)            
+                return;         
+            
+            // Confirm that basket items' weight is actually exceeding 10 lbs.
             LinkedHashMap<String, Integer> basketItems = basket.getBasketItems();
             Integer itemsTotWeight = 0;
             for (Entry<String, Integer> integerEntry : basketItems.entrySet())
             {
                 itemsTotWeight += (integerEntry.getValue() * Integer.parseInt(modeler.getProducts().get(integerEntry.getKey()).getSize().split(" ")[0]));
             }
-            
-            System.out.println();
             
             // TODO: Throw exception instead?
             if (itemsTotWeight <= 10)
@@ -1091,7 +1099,257 @@ public class Controller implements Observer
         {
             // TODO 
             
+            // Get the source store
+            LinkedHashMap<String, Store> stores = modeler.getStores();
+            Store store = stores.get(sourceDevice.getLocation().split(":")[0]);
             
+            System.out.println();   
+           
+            // Identify customer and have turnstile speaker acknowledge them
+            System.out.println("Controller Service: Identifying customer " + customerId);
+            Customer customer = store.getCustomers().get(customerId);            
+            String expression = null;
+            if (customer != null)
+                expression = "Hello, customer " + customer.getFirstName();
+            else
+                expression = "Hello";
+            Appliance appliance = (Appliance) sourceDevice;
+            if (appliance.getTurnstile().speak(expression))
+                System.out.println(appliance.getName() + ": \"" + expression + "\"");           
+            
+            // Initialize variables for customer's basket items (for registered customers)
+            Integer itemsTotValue = 0;
+            Basket basket = null;
+            LinkedHashMap<String, Integer> basketItems = null; 
+            
+            // If customer is registered
+            if ((customer != null) && customer.getType().toString().equals("registered"))
+            {
+                // Get the customer's basket
+                basket = modeler.getCustomerBasket(customerId, null);
+                basketItems = basket.getBasketItems();
+                
+                // Calculate the cost of their basket items
+                System.out.println("Controller Service: Computing the value of items in customer " + customerId + "'s basket");              
+                               
+                for (Entry<String, Integer> integerEntry : basketItems.entrySet())
+                {
+                    itemsTotValue += (integerEntry.getValue() * (modeler.getProducts().get(integerEntry.getKey()).getUnitPrice()));
+                }       
+            }          
+            
+            // If customer has a non-empty basket
+            if ((basket != null) && !basket.getBasketItems().isEmpty())
+            {
+                // Start Transaction
+                System.out.println("Controller Service: Starting transaction for " + customerId + "'s checkout");
+                String txnId = ledgerCp.processTransaction("0", itemsTotValue, 10, "checkout for " + customerId, customerId, store.getId());
+                System.out.println("Controller Service: Transaction submitted and processed for " + customerId + "'s checkout");
+                
+                // If transaction came back null, have turnstile speaker talk to customer
+                if (txnId == null)
+                {
+                    expression = "Transaction failed, " + store.getCustomers().get(customerId).getFirstName() + ". Please return items to store. Thank you!";                
+                    if (appliance.getTurnstile().speak(expression))
+                        System.out.println(appliance.getName() + ": \"" + expression + "\"");
+                    
+                    return;
+                }
+                
+                // If payer does not have enough funds, have turnstile speaker talk to customer
+                if (txnId != null && txnId.equals("payer has insufficient funds"))
+                {
+                    expression = "You do not have enough funds in your account for checkout, " + store.getCustomers().get(customerId).getFirstName()
+                            + ". Please return some or all items to store before checking out again. Thank you!";
+                    
+                    if (appliance.getTurnstile().speak(expression))
+                        System.out.println(appliance.getName() + ": \"" + expression + "\"");
+                    
+                    return;
+                }
+                    
+                // If payer account was not found, have turnstile speaker talk to customer
+                if (txnId != null && txnId.equals("payer account not found"))
+                {
+                    expression = "Your Blockchain account was not found, " + store.getCustomers().get(customerId).getFirstName()
+                            + ". Please return items to store.";
+                    
+                    if (appliance.getTurnstile().speak(expression))
+                        System.out.println(appliance.getName() + ": \"" + expression + "\"");
+                    
+                    return;
+                }           
+                     
+                // TODO: If txn processed successfully
+                if (txnId != null)
+                {               
+                    // Get weight of basket items                     
+                    Integer itemsTotWeight = 0;
+                    for (Entry<String, Integer> integerEntry : basketItems.entrySet())
+                    {
+                        itemsTotWeight += (integerEntry.getValue() * Integer.parseInt(modeler.getProducts().get(integerEntry.getKey()).getSize().split(" ")[0]));
+                    }
+                    
+                    // If weight of items is more than 10 lbs, command a robot to assist customer to car
+                    if (itemsTotWeight > 10)
+                    {
+                        expression = "Your basket items weigh more than 10 pounds. Please wait for a robot to assist you to your car";
+                        if (appliance.getTurnstile().speak(expression))
+                            System.out.println(appliance.getName() + ": \"" + expression + "\"");
+                        
+                        System.out.println(appliance.getName() + ": Calling for a robot to assist customer " + customerId + " to their car");                    
+                        Command carAssist = new CarAssist(sourceDevice, customerId);
+                        carAssist.execute();                    
+                    }
+                }
+            }
+                
+            // Tell customer they can pass
+            if (customer == null)
+                expression = "You may pass through turnstile";                
+            else    
+                expression = "Customer " + store.getCustomers().get(customerId).getFirstName() + ", you may pass through turnstile";
+            if (appliance.getTurnstile().speak(expression))
+                System.out.println(appliance.getName() + ": \"" + expression + "\"");          
+            
+            // Open turnstile
+            if (customer == null)
+                expression = ": Person passed through turnstile";
+            else
+                expression = ": Customer " + customerId + " passed through turnstile";
+            if (appliance.getTurnstile().letPersonPass())
+                System.out.println(appliance.getName() + expression);
+            
+            // Tell customer goodbye
+            if (customer == null)
+                expression = "Goodbye!";
+            else
+                expression = "Goodbye, customer " + store.getCustomers().get(customerId).getFirstName() + ". Thanks for shopping at "
+                        + store.getName() + "!";
+            if (appliance.getTurnstile().speak(expression))
+                System.out.println(appliance.getName() + ": \"" + expression + "\"");
+            
+            // If customer was a registered customer, clear their basket
+            if ((customer != null) && customer.getType().toString().equals("registered"))
+            {
+                System.out.println("Controller Service: Clearing customer " + customerId + "'s basket");
+                modeler.clearBasket(customerId, null);
+            }
+            
+            // Update customer's location
+            if (customer != null)
+            {
+                System.out.println("Controller Service: Updating customer " + customerId + "'s location");
+                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MMMM dd, yyyy HH:mm:ss");
+                LocalDateTime currentDateTime = LocalDateTime.now();
+                modeler.updateCustomer(customerId, "null", dtf.format(currentDateTime), null);
+            }
+                       
+            // TODO: Print how much store profited?
+            
+        }        
+    }
+    
+    public class EnterStore extends Command
+    {
+        /* Variables */
+        
+        private String customerId;
+        
+        /* Constructor */
+        
+        public EnterStore(Sensor sourceDevice, String customerId)
+        {
+            super(sourceDevice);
+             
+            this.customerId = customerId;
+        }
+
+        @Override
+        public void execute()
+        {
+            // TODO
+            
+            // Get the source store
+            LinkedHashMap<String, Store> stores = modeler.getStores();
+            Store store = stores.get(sourceDevice.getLocation().split(":")[0]);
+            
+            // Access source turnstile
+            Appliance appliance = (Appliance) sourceDevice;
+            
+            // Initialize string for turnstile speaker
+            String expression;
+            
+            // Output aesthetics
+            System.out.println();
+            
+            // Identify customer
+            System.out.println("Controller Service: Identifying customer " + customerId);
+            Customer customer = modeler.getCustomers().get(customerId);
+            
+            // If customer is not registered or not a guest
+            if (customer == null)
+            {
+                expression = "You do not have a registered account with " + store.getName() + ". Please register one and come back later";
+                if (appliance.getTurnstile().speak(expression))
+                    System.out.println(appliance.getName() + ": \"" + expression + "\"");
+                
+                return;
+            }
+            
+            // Initialize customer balance string
+            String customerBalance = null;
+            
+            // If customer is registered, get their account balance
+            if (customer.getType().toString().equals("registered"))
+            {
+                System.out.println("Controller Service: Checking customer " + customerId + "'s account for positive balance");                 
+                customerBalance = ledgerCp.getAccountBalance(customerId);                  
+                
+                // If account balance returned null
+                if (customerBalance == null)
+                {
+                    System.out.println();
+                    expression = "Your account information is unavailable. Please come back at another time";
+                    if (appliance.getTurnstile().speak(expression))
+                        System.out.println(appliance.getName() + ": \"" + expression + "\"");
+                    
+                    return;
+                }
+            }           
+            
+            // If customer has no funds in their account
+            if ((customerBalance != null) && (Integer.parseInt(customerBalance) <= 0))
+            {
+                expression = "You have no funds in your account. Please come back when you do";
+                if (appliance.getTurnstile().speak(expression))
+                    System.out.println(appliance.getName() + ": \"" + expression + "\"");
+                
+                return;
+            }          
+            
+            // Tell customer they can pass through turnstile and greet them
+            expression = "Hello, customer " + modeler.getCustomers().get(customerId).getFirstName() + ", you may pass through the turnstile. "
+                    + "Welcome to " + store.getName() + "!";
+            if (appliance.getTurnstile().speak(expression))
+                System.out.println(appliance.getName() + ": \"" + expression + "\"");          
+            
+            // Open turnstile
+            if (appliance.getTurnstile().letPersonPass())
+                System.out.println(appliance.getName() + ": Customer " + customerId + " passed through turnstile");
+            
+            // Update customer's location
+            System.out.println("Controller Service: Updating customer " + customerId + "'s location");
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MMMM dd, yyyy HH:mm:ss");
+            LocalDateTime currentDateTime = LocalDateTime.now();
+            modeler.updateCustomer(customerId, store.getId() + ":null", dtf.format(currentDateTime), null);
+            
+            // If customer is registered, assign them a virtual basket
+            if ((customerBalance != null) && (Integer.parseInt(customerBalance) > 0))
+            {             
+                System.out.println("Controller Service: Getting customer " + customerId + "'s virtual basket");
+                modeler.getCustomerBasket(customerId, null);
+            }
         }        
     }
 }

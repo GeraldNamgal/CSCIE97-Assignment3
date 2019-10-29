@@ -19,7 +19,7 @@ public class Customer
         adult, child;
     }
     
-    enum Type 
+    public enum Type 
     { 
         registered, guest; 
     }

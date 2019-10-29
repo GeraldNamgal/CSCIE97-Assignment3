@@ -68,7 +68,33 @@ public class Appliance extends Sensor
         {
             open = trueOrFalse;
             return open;
-        }       
+        }
+        
+        public boolean speak(String expression)
+        {
+            boolean speaking = true;
+            return speaking;
+        }
+        
+        public boolean letPersonPass()
+        {
+            boolean personPassed = false;
+            
+            // Open turstile
+            if (setOpen(true))
+            {
+                // Check that customer passed through turnstile
+                personPassed = true;
+                
+                if (personPassed == true)
+                {
+                    // Close turnstile
+                    setOpen(false);
+                }
+            }
+            
+            return personPassed;
+        }
     }
     
     public class Speaker

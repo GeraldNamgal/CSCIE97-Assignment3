@@ -90,12 +90,18 @@ public class Ledger
     
     public String processTransaction(Transaction transaction)
     {       
+        // Create a "reason for exception" string
+        String reason = null;
+        
         // Reject the transaction if it's invalid; raise exception
         try
         {            
             // Check if payer account is null (the account wasn't found [code logic] or some other reason)
             if (transaction.getPayer() == null)
+            {
+                reason = "payer account not found";
                 throw new LedgerException("submit transaction", "payer account not found; transaction cancelled");
+            }
             
             // Check if receiver account is null (the account wasn't found [code logic] or some other reason)
             if (transaction.getReceiver() == null)
@@ -108,6 +114,7 @@ public class Ledger
             // Check if payer has insufficient funds
             if (transaction.getPayer().getBalance() < (transaction.getFee() + transaction.getAmount()))
             {
+                reason = "payer has insufficient funds";
                 throw new LedgerException("submit transaction", "Payer has insufficient funds for amount and fee; "
                         + "transaction cancelled");
             }
@@ -117,34 +124,34 @@ public class Ledger
         {
             System.out.println();
             System.out.print(exception.getMessage());            
-            return null;
+            return reason;
         }
         
         // If transaction ID is a duplicate, raise and handle an exception (change txn ID)
-        try
-        {            
+        //try
+        //{            
             if (transactionIdsUsed.contains(transaction.getTransactionId()))
             {
                 // Get suggested id
                 while (transactionIdsUsed.contains(Integer.toString(suggestedId)))
                     suggestedId++;
                 
-                throw new LedgerException("submit transaction", "duplicate ID submitted; ID changed to \"" + suggestedId + "\"");
+                //throw new LedgerException("submit transaction", "duplicate ID submitted; ID changed to \"" + suggestedId + "\"");
             }
-        }
+        //}
         
-        catch (LedgerException duplicateIdException)
-        {
+        //catch (LedgerException duplicateIdException)
+        //{
             // Print exception's action and reason
-            System.out.println();
-            System.out.print(duplicateIdException.getMessage());
+            //System.out.println();
+            //System.out.print(duplicateIdException.getMessage());
             
             // Assign suggested id to the transaction                        
             transaction.setTransactionId(Integer.toString(suggestedId));
             
             // Increment suggestedId for next potential duplicate id
             suggestedId++;
-        }
+        //}
         
         // Transfer amount from payer to receiver
         transaction.getPayer().deductBalance(transaction.getAmount());

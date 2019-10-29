@@ -7,9 +7,6 @@ define store store1 name "Harvard Square Store" address "1400 Mass Avenue, Cambr
 # Define store 1's Blockchain account
 create-account store1
 
-# Fund store 1's Blockchain account
-process-transaction 0 amount 1000000 fee 10 payload "fund account" payer master receiver store1
-
 # Define aisle 1
 define aisle store1:aisle1 name Milks description "milk, yogurt, and other dairy-like products" location floor
 
@@ -62,16 +59,97 @@ define inventory inventory5 location store1:aisle2:shelf2 capacity 35 count 35 p
 define inventory inventory6 location store1:aisle5:shelf2 capacity 35 count 35 product product3
 
 # Define customer 1 (registered customer)
-define customer customer1 first_name John last_name Smith age_group adult type registered email_address john@jmail.com account john
+define customer customer1 first_name John last_name Jones age_group adult type registered email_address john.j@jmail.com account john
 
 # Create customer 1's Blockchain account
 create-account customer1
 
 # Fund customer 1's Blockchain account
-process-transaction 1 amount 2000 fee 10 payload "fund account" payer master receiver customer1
+process-transaction 0 amount 2000 fee 10 payload "fund account" payer master receiver customer1
 
 # Define customer 2 (a guest)
-define customer customer2 first_name Stephanie last_name Jones age_group child type guest email_address steph.j@jmail.com account steph
+define customer customer2 first_name Stephanie last_name Jones age_group child type guest email_address steph.j@jmail.com account stephanie
+
+# Define customer 3 (registered customer)
+define customer customer3 first_name Mark last_name Jones age_group adult type registered email_address mark.j@jmail.com account mark
+
+# Create customer 3's Blockchain account
+create-account customer3
+
+# Fund customer 3's Blockchain account
+process-transaction 1 amount 2000 fee 10 payload "fund account" payer master receiver customer3
+
+# Define customer 4 (registered customer)
+define customer customer4 first_name Mary last_name Stein age_group adult type registered email_address mary.s@jmail.com account mary
+
+# Create customer 4's Blockchain account
+create-account customer4
+
+# Fund customer 4's Blockchain account
+process-transaction 2 amount 2000 fee 10 payload "fund account" payer master receiver customer4
+
+# Define customer 5 (registered customer)
+define customer customer5 first_name Joseph last_name McAllister age_group adult type registered email_address joseph.m@jmail.com account joseph
+
+# Create customer 5's Blockchain account
+create-account customer5
+
+# Fund customer 5's Blockchain account
+process-transaction 3 amount 2000 fee 10 payload "fund account" payer master receiver customer5
+
+# Define customer 6 (registered customer)
+define customer customer6 first_name Stan last_name Jenkins age_group adult type registered email_address stan.j@jmail.com account stan
+
+# Create customer 6's Blockchain account
+create-account customer6
+
+# Fund customer 6's Blockchain account
+process-transaction 4 amount 2000 fee 10 payload "fund account" payer master receiver customer6
+
+# Define customer 7 (registered customer)
+define customer customer7 first_name Jalina last_name White age_group adult type registered email_address jalina.w@jmail.com account jalina
+
+# Create customer 7's Blockchain account
+create-account customer7
+
+# Fund customer 7's Blockchain account
+process-transaction 5 amount 2000 fee 10 payload "fund account" payer master receiver customer7
+
+# Define customer 8 (registered customer)
+define customer customer8 first_name Sebastian last_name Kim age_group adult type registered email_address sebastian.k@jmail.com account sebastian
+
+# Create customer 8's Blockchain account
+create-account customer8
+
+# Fund customer 8's Blockchain account
+process-transaction 6 amount 2000 fee 10 payload "fund account" payer master receiver customer8
+
+# Define customer 9 (registered customer)
+define customer customer9 first_name Lisa last_name Ford age_group adult type registered email_address lisa.f@jmail.com account lisa
+
+# Create customer 9's Blockchain account
+create-account customer9
+
+# Fund customer 9's Blockchain account
+process-transaction 7 amount 2000 fee 10 payload "fund account" payer master receiver customer9
+
+# Define customer 10 (registered customer)
+define customer customer10 first_name Art last_name Weyl age_group adult type registered email_address art.w@jmail.com account art
+
+# Create customer 10's Blockchain account
+create-account customer10
+
+# Fund customer 10's Blockchain account
+process-transaction 8 amount 2000 fee 10 payload "fund account" payer master receiver customer10
+
+# Define customer 11 (registered customer)
+define customer customer11 first_name Karen last_name Peterson age_group adult type registered email_address karen.p@jmail.com account karen
+
+# Create customer 11's Blockchain account
+create-account customer11
+
+# Fund customer 11's Blockchain account
+process-transaction 9 amount 2000 fee 10 payload "fund account" payer master receiver customer11
 
 # Define camera 1
 define device camera1 name "camera 1" type camera location store1:aisle1
@@ -190,8 +268,33 @@ create event microphone3 event "account_balance customer1"
 # Show product2 (unit price should be 1/6 of total value of customer 1's basket items)
 show product product2
 
-# Checkout event for customer 1
+# Checkout event for customer 1 (a registered customer with basket items)
 create event turnstile1 event "checkout customer1"
 
-# Car Assist event for customer 1
-create event turnstile1 event "car_assist customer1"
+# Checkout event for customer 2 (a guest)
+create event turnstile1 event "checkout customer2"
+
+# Show customer 1 (should be out of store1 ["null" location])
+show customer customer1
+
+# Show customer 2 (should be out of store1 ["null" location])
+show customer customer2
+
+# Show store 1 (customer 1 and customer 2 should not be shown as "active customers")
+show store store1
+
+# Get block 2 from ledger (customer 1's transaction should be first transaction)
+get-block 2
+
+# Enter Store event for customer1 (registered customer) again
+create event turnstile2 event "enter_store customer1"
+
+# Enter Store event for customer2 (a guest) again
+create event turnstile2 event "enter_store customer2"
+
+# Error: Attempt to have an unregistered person enter the store
+create event turnstile2 event "enter_store unknownPerson"
+
+show store store1
+
+show basket_items customer1

@@ -98,7 +98,7 @@ public class CommandProcessor
         Account account = ledger.createAccount(address);
     }
 
-    public void processTransaction(String transactionId, Integer amount, Integer fee, String payload, String payer, String receiver)
+    public String processTransaction(String transactionId, Integer amount, Integer fee, String payload, String payer, String receiver)
     {
         // Initialize Account objects for payer and receiver address inputs
         Account payerAccount = null;
@@ -112,22 +112,26 @@ public class CommandProcessor
         Transaction transaction = new Transaction(transactionId, amount, fee, payload, payerAccount, receiverAccount);
 
         // Submit transaction for processing
-        String processedTransactionId = ledger.processTransaction(transaction);
+        String processedTransactionId = null;
+        processedTransactionId = ledger.processTransaction(transaction);
 
         // Output transaction id
-        if (processedTransactionId != null)
+        /*if (processedTransactionId != null)
         {
             System.out.println();
             System.out.println("Transaction \'" + processedTransactionId + "\' processed.");
-        }
+        }*/
+        
+        return processedTransactionId;
     }
 
     public String getAccountBalance(String address)
     {
         String acctBalance = null;
         
-        if (ledger.getAccountBalance(address) != null)
-            acctBalance = Integer.toString(ledger.getAccountBalance(address));        
+        Integer balance = ledger.getAccountBalance(address);        
+        if (balance != null)
+            acctBalance = Integer.toString(balance);        
        
         return acctBalance;
     }
