@@ -2,9 +2,7 @@
  * Gerald Arocena
  * CSCI E-97
  * Professor: Eric Gieseke
- * Assignment 1
- *
- * Creates Block objects for blockchain to be utilized by other classes, e.g., the Ledger's blockMap
+ * Assignment 3
  */
 
 package com.cscie97.store.ledger;

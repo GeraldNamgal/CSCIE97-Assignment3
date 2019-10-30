@@ -22,6 +22,9 @@ public class Modeler implements StoreModelService, Subject
 {
     /* Observer Variable(s) */
     
+    /* *
+     * The list of Observers the Model Service is contracted to notify with update events 
+     */
     private ArrayList<Observer> observers; 
     
     /* API Variables */
@@ -48,18 +51,27 @@ public class Modeler implements StoreModelService, Subject
     
     /* Subject interface API Methods */
     
+    /* *
+     * Registers a new Observer 
+     */
     @Override
     public void registerObserver(Observer newObserver)
     {
         observers.add(newObserver);
     }
   
+    /* *
+     * Deregisters an Observer
+     */
     @Override
     public void deregisterObserver(Observer observerToRemove)
     {
         observers.remove(observerToRemove);        
     }
     
+    /* *
+     * Notifies Model Service's set of Observers of UpdateEvents which includes the source device that perceived event
+     */
     @Override
     public void notifyObservers(Sensor sourceDevice, String[] eventToSend)
     {
@@ -72,10 +84,9 @@ public class Modeler implements StoreModelService, Subject
     /* Store Model Service interface API Methods */
     
     /* *
-     * Sends an event to a device
+     * Sends a simulated event to a device and calls notifyObservers method
      * @param id The unique id of the device
-     * @param event The event to be sent
-     * @return An event string
+     * @param simulatedEvent The event to be created 
      */
     @Override
     public void createEvent(String id, String simulatedEvent, String auth_token)
@@ -98,60 +109,12 @@ public class Modeler implements StoreModelService, Subject
             }
         }
         
-        // TODO: Send event to device's event method       
+        // Send simulated event to device's event method       
         String[] eventToSend = sourceDevice.event(simulatedEvent);
         
-        // TODO: Notify observers of the event sent back from device
+        // Notify observers of the event sent back from device
         notifyObservers(sourceDevice, eventToSend);   
-    }
-    
-    /* *
-     * Sends a command to an appliance
-     * @param id The unique id of the appliance
-     * @param command The command to be sent
-     */
-    @Override
-    public void createCommand(String id, String command, String auth_token)
-    {
-        Sensor device = devices.get(id);
-        
-        // If device wasn't found
-        if (device == null)
-        {
-            try
-            {
-                throw new ModelerException("create command", "device not found");
-            }
-            
-            catch (ModelerException exception)
-            {
-                System.out.println();
-                System.out.print(exception.getMessage());      
-                return;
-            }
-        }
-        
-        // Check that device is an appliance
-        if (!Appliance.containsTypeEnum(device.getType()))
-        {
-            try
-            {
-                throw new ModelerException("create command", "device is not an appliance; command not sent");
-            }
-            
-            catch (ModelerException exception)
-            {
-                System.out.println();
-                System.out.print(exception.getMessage());      
-                return;
-            }
-        }
-        
-        // Cast device to an Appliance
-        // TODO: Necessary or delete? -- Appliance appliance = (Appliance) device;
-                
-        // TODO: Necessary or delete? -- Send command to appliance's method                
-    }  
+    }     
     
     /* *
      * Creates a new Store
@@ -1105,9 +1068,7 @@ public class Modeler implements StoreModelService, Subject
                 System.out.print(exception.getMessage());      
                 return null;
             }
-        }
-        
-        // TODO: Check that size is in pounds (convert if not / standardize somehow)?
+        } 
         
         // Change temperature string to an enum
         Shelf.Temperature temperatureEnum = Shelf.Temperature.valueOf(temperature);
@@ -1925,9 +1886,51 @@ public class Modeler implements StoreModelService, Subject
         // Print string to stdout
         System.out.print("\nOutput:>>");
         System.out.print(deviceString);
-    }   
-
-    /* Getters and Setters */
+    }
+    
+    /* *
+     * Deprecated --
+     * Sends a command to an appliance
+     * @param id The unique id of the appliance
+     * @param command The command to be sent
+     */
+    @Override
+    public void createCommand(String id, String command, String auth_token)
+    {
+        Sensor device = devices.get(id);
+        
+        // If device wasn't found
+        if (device == null)
+        {
+            try
+            {
+                throw new ModelerException("create command", "device not found");
+            }
+            
+            catch (ModelerException exception)
+            {
+                System.out.println();
+                System.out.print(exception.getMessage());      
+                return;
+            }
+        }
+        
+        // Check that device is an appliance
+        if (!Appliance.containsTypeEnum(device.getType()))
+        {
+            try
+            {
+                throw new ModelerException("create command", "device is not an appliance; command not sent");
+            }
+            
+            catch (ModelerException exception)
+            {
+                System.out.println();
+                System.out.print(exception.getMessage());      
+                return;
+            }
+        }              
+    }    
     
     @Override
     public LinkedHashMap<String, Store> getStores()
@@ -1945,7 +1948,9 @@ public class Modeler implements StoreModelService, Subject
     public LinkedHashMap<String, Customer> getCustomers()
     {
         return customers;
-    }    
+    }
+    
+    /* Getters and Setters */
 
     public LinkedHashMap<String, Inventory> getInventories()
     {

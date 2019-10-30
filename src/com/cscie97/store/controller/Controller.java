@@ -1,3 +1,10 @@
+/* *
+ * Gerald Arocena
+ * CSCI E-97
+ * Professor: Eric Gieseke
+ * Assignment 3
+ */
+
 package com.cscie97.store.controller;
 
 import java.time.LocalDateTime;
@@ -19,7 +26,9 @@ import com.cscie97.store.model.StoreModelService;
 import com.cscie97.store.model.Subject;
 
 /* *
- * Controller implements the Observer interface (i.e., the observer in the observer pattern).
+ * Controller implements the Observer interface (i.e., the observer in the observer pattern) which contains an update method
+ * for receiving UpdateEvents from a subject it's registered with. It gets access to the Subject interface of the Store Model
+ * Service and the Ledger Service via parameters that are passed into its constructor
  */
 public class Controller implements Observer
 {
@@ -41,6 +50,10 @@ public class Controller implements Observer
 
     /* API Method(s) */
     
+    /* *
+     * Receives UpdateEvents from the subject it's registered with and calls handleEvent with it
+     * @param event The UpdateEvent sent from the subject
+     */
     @Override
     public void update(UpdateEvent event)
     {        
@@ -49,6 +62,11 @@ public class Controller implements Observer
     
     /* Utility Method(s) */
     
+    /* *
+     * The event handler for UpdateEvents received from a subject. Calls the appropriate Command type in response
+     * to the UpdateEvent and executes it
+     * @param event The UpdateEvent received from the subject
+     */
     public void handleEvent(UpdateEvent event)
     {
         // Get event's string array
@@ -215,6 +233,9 @@ public class Controller implements Observer
     
     /* Nested Classes */
     
+    /* *
+     * Emergency class that provides the actions needed to appropriately respond to an Emergency event 
+     */
     public class Emergency extends Command
     {       
         /* Variables */
@@ -224,6 +245,11 @@ public class Controller implements Observer
         
         /* Constructor */
         
+        /* *
+         * @param sourceDevice The device that created / sent the event (which also contains a reference to the source store)
+         * @param eventType The type of event (fire, flood, earthquake, or armed_intruder)
+         * @param aisleNumber The aisle number the event is happening at
+         */
         public Emergency(Sensor sourceDevice, String eventType, String aisleNumber)
         {
             super(sourceDevice);
@@ -234,6 +260,9 @@ public class Controller implements Observer
 
         /* Method(s) */
         
+        /* *
+         * Opens the store's turnstiles, and commands the store's speakers, and robots to perform certain duties
+         */
         @Override
         public void execute()
         {
@@ -308,16 +337,23 @@ public class Controller implements Observer
         }
     }
     
+    /* *
+     * Class that represents the commands and actions to be taken in response to a Basket Items event
+     */
     public class BasketItems extends Command
-    {       
-        /* Constructor */
-        
+    {             
         private String customerId;
         private String addOrRemove;
         private String productId;
         private String number;
         private String aisleShelfLoc;
         
+        /* Constructor */
+        
+        /* *
+         * @param number The number of the product to add or remove
+         * @param aisleShelfLoc The aisle and shelf location of the product that's being added or removed
+         */
         public BasketItems(Sensor sourceDevice, String customerId, String addOrRemove, String productId, String number, String aisleShelfLoc)
         {
             super(sourceDevice);
@@ -331,6 +367,9 @@ public class Controller implements Observer
 
         /* Method(s) */
         
+        /* *
+         * Updates a customer's basket and the product's associated store inventory. Commands a robot to restock the product
+         */
         @Override
         public void execute()
         {
@@ -600,6 +639,9 @@ public class Controller implements Observer
         }
     }
     
+    /* *
+     * Class that represents the commands and actions to be taken in response to a Clean event 
+     */
     public class Clean extends Command
     {       
         /* Variables */
@@ -609,6 +651,9 @@ public class Controller implements Observer
         
         /* Constructor */
         
+        /* *
+         * @param aisleNumber The aisle number where to product to be cleaned is
+         */
         public Clean(Sensor sourceDevice, String productId, String aisleNumber)
         {
             super(sourceDevice);
@@ -619,6 +664,9 @@ public class Controller implements Observer
 
         /* Method(s) */
         
+        /* *
+         * Commands a robot to clean the product up in the given aisle
+         */
         @Override
         public void execute()
         {
@@ -680,6 +728,9 @@ public class Controller implements Observer
         }
     }
     
+    /* *
+     * Class that represents the device commands and actions to be taken in response to a Broken Glass event 
+     */
     public class BrokenGlass extends Command
     {
         /* Variables */
@@ -695,6 +746,9 @@ public class Controller implements Observer
             this.aisleNumber = aisleNumber;
         }
 
+        /* *
+         * Commands a robot to clean up broken glass in given aisle
+         */
         @Override
         public void execute()
         {
@@ -754,6 +808,9 @@ public class Controller implements Observer
         }        
     }
     
+    /* *
+     * Class that represents the device commands and actions to be taken in response to a Missing Person event
+     */
     public class MissingPerson extends Command
     {
         /* Variables */
@@ -762,6 +819,9 @@ public class Controller implements Observer
 
         /* Constructor */
         
+        /* *
+         * @param customerId The id of the person to be sought
+         */
         public MissingPerson(Sensor sourceDevice, String customerId)
         {
             super(sourceDevice);
@@ -769,6 +829,9 @@ public class Controller implements Observer
             this.customerId = customerId;
         }
 
+        /* *
+         * Locates the sought after person in the store and commands a speaker to tell customer the location
+         */
         @Override
         public void execute()
         {
@@ -824,6 +887,9 @@ public class Controller implements Observer
         }        
     }
     
+    /* *
+     * Class that represents the actions to be take in response to a Customer Seen event 
+     */
     public class CustomerSeen extends Command
     {
         /* Variables */
@@ -832,8 +898,8 @@ public class Controller implements Observer
         private String aisleId;
         private String dateTime;
         
-        /* Constructor */
-        
+        /* Constructor */        
+       
         public CustomerSeen(Sensor sourceDevice, String customerId, String aisleId, String dateTime)
         {
             super(sourceDevice);
@@ -843,6 +909,9 @@ public class Controller implements Observer
             this.dateTime = dateTime;
         }
 
+        /* *
+         * Updates the customer's location
+         */
         @Override
         public void execute()
         {          
@@ -858,6 +927,9 @@ public class Controller implements Observer
         }        
     }
     
+    /* *
+     * Class that represents the device commands and actions to be taken in response to a Fetch Product event 
+     */
     public class FetchProduct extends Command
     {
         /* Variables */
@@ -869,6 +941,9 @@ public class Controller implements Observer
         
         /* Constructor */
         
+        /* *
+         * @param number The amount of the product to be fetched
+         */
         public FetchProduct(Sensor sourceDevice, String productId, Integer number, String aisleShelfLoc, String customerId)
         {
             super(sourceDevice);
@@ -879,6 +954,9 @@ public class Controller implements Observer
             this.customerId = customerId;
         }
 
+        /* *
+         * Commands a robot to fetch a product for the customer given
+         */
         @Override
         public void execute()
         {
@@ -989,6 +1067,9 @@ public class Controller implements Observer
         }        
     }
     
+    /* *
+     * Class that represents the device commands and actions to be taken in response to an Account Balance event
+     */
     public class AccountBalance extends Command
     {
         /* Variables */
@@ -996,7 +1077,7 @@ public class Controller implements Observer
         private String customerId;
 
         /* Constructor */
-        
+      
         public AccountBalance(Sensor sourceDevice, String customerId)
         {
             super(sourceDevice);
@@ -1004,6 +1085,10 @@ public class Controller implements Observer
             this.customerId = customerId;
         }
 
+        /* *
+         * Computes the total value of the items in customer's basket and retrieves the customer's Blockchain account balance.
+         * Then, commands a speaker to tell the customer this information 
+         */
         @Override
         public void execute()
         {
@@ -1103,14 +1188,17 @@ public class Controller implements Observer
         }        
     }
     
+    /* *
+     * Class that represents the device commands and actions to be taken in response to a Car Assist event 
+     */
     public class CarAssist extends Command
     {
         /* Variables */
         
         private String customerId;
         
-        /* Constructor */
-        
+        /* Constructor */        
+       
         public CarAssist(Sensor sourceDevice, String customerId)
         {
             super(sourceDevice);
@@ -1118,6 +1206,9 @@ public class Controller implements Observer
             this.customerId = customerId;
         }
 
+        /* *
+         * Commands a robot to assist a customer to their car if the customer's items weigh more than 10 lbs
+         */
         @Override
         public void execute()
         {
@@ -1212,6 +1303,9 @@ public class Controller implements Observer
         }       
     }
     
+    /* *
+     * Class that represents the device commands and actions to be take in response to a Checkout event
+     */
     public class Checkout extends Command
     {
         /* Variables */
@@ -1219,7 +1313,7 @@ public class Controller implements Observer
         private String customerId;
         
         /* Constructor */
-        
+     
         public Checkout(Sensor sourceDevice, String customerId)
         {
             super(sourceDevice);
@@ -1227,6 +1321,10 @@ public class Controller implements Observer
             this.customerId = customerId;
         }
 
+        /* *
+         * Identifies a customer, computes their basket items value, processes a transaction for the items, opens
+         * turnstile to let customer pass and has turnstile say "goodbye" to customer 
+         */
         @Override
         public void execute()
         {
@@ -1408,6 +1506,9 @@ public class Controller implements Observer
         }        
     }
     
+    /* *
+     * Class that represents the device commands and actions to be taken in response to an Enter Store event 
+     */
     public class EnterStore extends Command
     {
         /* Variables */
@@ -1415,7 +1516,7 @@ public class Controller implements Observer
         private String customerId;
         
         /* Constructor */
-        
+       
         public EnterStore(Sensor sourceDevice, String customerId)
         {
             super(sourceDevice);
@@ -1423,6 +1524,10 @@ public class Controller implements Observer
             this.customerId = customerId;
         }
 
+        /* *
+         * Looks up customer, checks that customer has a positive account balance, assigns a customer a virtual basket,
+         * opens turnstile, and has turnstile speaker greet the customer
+         */
         @Override
         public void execute()
         {

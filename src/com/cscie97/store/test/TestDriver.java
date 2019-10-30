@@ -12,7 +12,8 @@ import java.util.Scanner;
 import com.cscie97.store.model.CommandProcessor;
 
 /* *
- * Test driver class that contains main method that calls the CommandProcessor class to exercise the Modeler
+ * Test driver class that contains main method that calls the Store Model CommandProcessor class to exercise the Modeler
+ * and Ledger services
  */
 public class TestDriver
 {
@@ -101,7 +102,8 @@ public class TestDriver
         string += " 23.) create command <device_id> message <command>\n";
         string += "\n";
         string += " Example command: define store store_1 name \"Harvard Square Store\" address \"1400 Mass Avenue,"
-                + " Cambridge, MA 02138\"\n\n";                
+                + " Cambridge, MA 02138\"\n\n";
+        string += " (Ledger commands are also accepted)\n\n";
         string += "Please enter a command ('q' to quit): ";      
         
         return string;

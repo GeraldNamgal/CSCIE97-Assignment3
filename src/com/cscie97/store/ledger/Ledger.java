@@ -2,9 +2,7 @@
  * Gerald Arocena
  * CSCI E-97
  * Professor: Eric Gieseke
- * Assignment 1
- *
- * Contains methods and attributes for creating and operating a blockchain service
+ * Assignment 3
  */
 
 package com.cscie97.store.ledger;

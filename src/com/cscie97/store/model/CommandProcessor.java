@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import com.cscie97.store.controller.Controller;
 
 /* *
- * Exercises the Modeler
+ * Exercises the Modeler, utilizes Ledger Service's CommandProcessor, and creates and depends on Controller
  */
 public class CommandProcessor
 {

@@ -1,8 +1,21 @@
+/* *
+ * Gerald Arocena
+ * CSCI E-97
+ * Professor: Eric Gieseke
+ * Assignment 3
+ */
+
 package com.cscie97.store.controller;
 
 import com.cscie97.store.model.Sensor;
 
-// Referenced https://www.vogella.com/tutorials/DesignPatternObserver/article.html
+/* *
+ * UpdateEvent class that represents the even that's passed from subject to observer in the Observer design
+ * pattern. It comprises of the source device that created the event and what the event actually is in a
+ * string array format
+ *
+ * Referenced https://www.vogella.com/tutorials/DesignPatternObserver/article.html
+ */
 public class UpdateEvent
 {
     private Sensor sourceDevice;

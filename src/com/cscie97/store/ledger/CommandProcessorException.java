@@ -2,9 +2,7 @@
  * Gerald Arocena
  * CSCI E-97
  * Professor: Eric Gieseke
- * Assignment 1
- *
- * Handles exceptions thrown by the CommandProcessor
+ * Assignment 3
  */
 
 package com.cscie97.store.ledger;
