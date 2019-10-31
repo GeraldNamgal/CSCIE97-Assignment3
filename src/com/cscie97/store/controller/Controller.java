@@ -1272,7 +1272,7 @@ public class Controller implements Observer
                     }
                 }
                 
-                // If store has a robot, tell it to fetch the product
+                // If store has a robot, tell it to assist a customer
                 if (robotKeys.size() > 0)
                 {
                     Appliance appliance = (Appliance) store.getDevices().get(robotKeys.get(0));
