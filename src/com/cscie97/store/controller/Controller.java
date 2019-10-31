@@ -72,6 +72,9 @@ public class Controller implements Observer
         // Get event's string array
         String[] eventStrArr = event.getPerceivedEvent();
         
+        /* Classify event to a Command: */
+        
+        // If Emergency event
         if ((eventStrArr.length == 3) && eventStrArr[0].equals("emergency"))
         {    
             // Check for emergency types
@@ -80,6 +83,8 @@ public class Controller implements Observer
             {
                 // Create new Emergency               
                 Command emergency = new Emergency(event.getSourceDevice(), eventStrArr[1], eventStrArr[2]);
+                
+                System.out.println("\nEMERGENCY EVENT received. Emergency Command created and executing...");
                 
                 // Run the Command's execute method
                 emergency.execute();
@@ -101,6 +106,7 @@ public class Controller implements Observer
             }
         }
         
+        // If Basket event
         else if ((eventStrArr.length == 6) && eventStrArr[0].equals("basket_items") && (eventStrArr[2].equals("add") || eventStrArr[2].equals("remove")))
         {            
             // Check if integer input is valid
@@ -131,33 +137,53 @@ public class Controller implements Observer
             }
             
             Command basketItems = new BasketItems(event.getSourceDevice(), eventStrArr[1], eventStrArr[2], eventStrArr[3], eventStrArr[4], eventStrArr[5]);
+            
+            System.out.println("\nBASKET EVENT received. BasketItems Command created and executing...");
+            
             basketItems.execute();
         }
         
+        // If Cleaning event
         else if ((eventStrArr.length == 3) && eventStrArr[0].equals("clean"))
         {
             Command clean = new Clean(event.getSourceDevice(), eventStrArr[1], eventStrArr[2]);
+            
+            System.out.println("\nCLEANING EVENT received. Clean Command created and executing...");
+            
             clean.execute();
         }
         
+        // If Broken Glass event
         else if ((eventStrArr.length == 2) && eventStrArr[0].equals("broken_glass"))
         {
             Command brokenGlass = new BrokenGlass(event.getSourceDevice(), eventStrArr[1]);
+            
+            System.out.println("\nBROKEN GLASS EVENT received. BrokenGlass Command created and executing...");
+            
             brokenGlass.execute();
         }
         
+        // If Missing Person event
         else if ((eventStrArr.length == 2) && eventStrArr[0].equals("missing_person"))
         {
             Command missingPerson = new MissingPerson(event.getSourceDevice(), eventStrArr[1]);
+           
+            System.out.println("\nMISSING PERSON EVENT received. MissingPerson Command created and executing...");
+            
             missingPerson.execute();
         }
         
+        // If Customer Seen event
         else if ((eventStrArr.length == 4) && eventStrArr[0].equals("customer_seen"))
         {
             Command customerSeen = new CustomerSeen(event.getSourceDevice(), eventStrArr[1], eventStrArr[2], eventStrArr[3]);
+            
+            System.out.println("\nCUSTOMER SEEN EVENT received. CustomerSeen Command created and executing...");
+            
             customerSeen.execute();
         }
         
+        // If Fetch Product event
         else if ((eventStrArr.length == 5) && eventStrArr[0].equals("fetch_product"))
         {
             // Check if integer input is valid
@@ -188,33 +214,53 @@ public class Controller implements Observer
             }
             
             Command fetchProduct = new FetchProduct(event.getSourceDevice(), eventStrArr[1], Integer.parseInt(eventStrArr[2]), eventStrArr[3], eventStrArr[4]);
+            
+            System.out.println("\nFETCH PRODUCT EVENT received. FetchProduct Command created and executing...");
+            
             fetchProduct.execute();
         }
         
+        // If Check Account Balance event
         else if ((eventStrArr.length == 2) && eventStrArr[0].equals("account_balance"))
         {
             Command accountBalance = new AccountBalance(event.getSourceDevice(), eventStrArr[1]);
+            
+            System.out.println("\nCHECK ACCOUNT BALANCE EVENT received. AccountBalance Command created and executing...");
+            
             accountBalance.execute();
         }
         
+        // If Assist Customer to Car event
         else if ((eventStrArr.length == 2) && eventStrArr[0].equals("car_assist"))
         {
             Command carAssist = new CarAssist(event.getSourceDevice(), eventStrArr[1]);
+            
+            System.out.println("\nASSIST CUSTOMER TO CAR EVENT received. CarAssist Command created and executing...");
+            
             carAssist.execute();
         }
         
+        // If Checkout event
         else if ((eventStrArr.length == 2) && eventStrArr[0].equals("checkout"))
         {
             Command checkout = new Checkout(event.getSourceDevice(), eventStrArr[1]);
+            
+            System.out.println("\nCHECKOUT EVENT received. Checkout Command created and executing...");
+            
             checkout.execute();
         }
         
+        // If Enter Store event
         else if ((eventStrArr.length == 2) && eventStrArr[0].equals("enter_store"))
         {
             Command enterStore = new EnterStore(event.getSourceDevice(), eventStrArr[1]);
+            
+            System.out.println("\nENTER STORE EVENT received. EnterStore Command created and executing...");
+            
             enterStore.execute();
         }
         
+        // Else event wasn't recognized
         else
         {
             try
@@ -231,7 +277,7 @@ public class Controller implements Observer
         }
     }
     
-    /* Nested Classes */
+    /* The Command Classes: */
     
     /* *
      * Emergency class that provides the actions needed to appropriately respond to an Emergency event 
@@ -271,9 +317,7 @@ public class Controller implements Observer
             Store store = stores.get(sourceDevice.getLocation().split(":")[0]);
             
             // Initialize array for getting store's device map's robot type appliance keys
-            ArrayList<String> robotKeys = new ArrayList<String>();
-            
-            System.out.println();
+            ArrayList<String> robotKeys = new ArrayList<String>();            
             
             // Iterate through devices and perform type-specific actions
             Sensor devicePointer;
@@ -418,9 +462,7 @@ public class Controller implements Observer
                     }
                 }
             }
-            
-            System.out.println();
-            
+                        
             // If event was customer added (rather than removed) a basket item
             if (addOrRemove.equals("add") && !inventory.equals(null))
             {                            
@@ -695,9 +737,7 @@ public class Controller implements Observer
                         robotKeys.add(deviceEntry.getKey());                       
                     }
                 }
-            }
-            
-            System.out.println();
+            }            
             
             // If store has a robot, tell it to clean up the product
             if (robotKeys.size() > 0)
@@ -777,9 +817,7 @@ public class Controller implements Observer
                         robotKeys.add(deviceEntry.getKey());                       
                     }
                 }
-            }
-            
-            System.out.println();
+            }            
             
             // If store has a robot, tell it to clean up the broke glass
             if (robotKeys.size() > 0)
@@ -854,9 +892,7 @@ public class Controller implements Observer
                     speakerKey = deviceEntry.getKey();
                     break;
                 }
-            }
-            
-            System.out.println();
+            }            
             
             // If store speaker was found near microphone that triggered event, command it to announce message
             if (speakerKey != null)
@@ -917,9 +953,7 @@ public class Controller implements Observer
         {          
             // Get the source store
             LinkedHashMap<String, Store> stores = modeler.getStores();
-            Store store = stores.get(sourceDevice.getLocation().split(":")[0]);
-            
-            System.out.println();
+            Store store = stores.get(sourceDevice.getLocation().split(":")[0]);            
             
             // Update customer's location
             System.out.println("Controller Service: Updating customer " + customerId + "'s location");
@@ -985,9 +1019,7 @@ public class Controller implements Observer
                         robotKeys.add(deviceEntry.getKey());                       
                     }
                 }
-            }
-            
-            System.out.println();
+            }            
             
             // If store has a robot, tell it to fetch the product
             if (robotKeys.size() > 0)
@@ -1091,9 +1123,7 @@ public class Controller implements Observer
          */
         @Override
         public void execute()
-        {
-            System.out.println();
-            
+        {            
             System.out.println("Controller Service: Computing the value of items in customer " + customerId + "'s basket");
             
             // Calculate the total value of the customer's basket items
@@ -1331,9 +1361,7 @@ public class Controller implements Observer
             // Get the source store
             LinkedHashMap<String, Store> stores = modeler.getStores();
             Store store = stores.get(sourceDevice.getLocation().split(":")[0]);
-            
-            System.out.println();   
-           
+                       
             // Identify customer and have turnstile speaker acknowledge them
             System.out.println("Controller Service: Identifying customer " + customerId);
             Customer customer = store.getCustomers().get(customerId);            
@@ -1457,8 +1485,13 @@ public class Controller implements Observer
                         appliance.getTurnstile().speak(expression);                            
                         
                         System.out.println(appliance.getName() + ": Calling for a robot to assist customer " + customerId + " to their car");                    
+                        
                         Command carAssist = new CarAssist(sourceDevice, customerId);
-                        carAssist.execute();                    
+                        System.out.println(" - Break -");
+                        System.out.println("ASSIST CUSTOMER TO CAR EVENT received. CarAssist Command created and executing...");
+                        carAssist.execute();
+                        System.out.print(" - End Break -");
+                        System.out.println();
                     }
                 }
             }
@@ -1539,10 +1572,7 @@ public class Controller implements Observer
             Appliance appliance = (Appliance) sourceDevice;
             
             // Initialize string for turnstile speaker
-            String expression;
-            
-            // Output aesthetics
-            System.out.println();
+            String expression;            
             
             // Identify customer
             System.out.println("Controller Service: Identifying customer " + customerId);
